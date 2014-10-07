@@ -1,0 +1,9 @@
+{
+    "mothership": {
+        "host": "http://admin.ibd-lr.com",
+        "endpoint": "/mothership/save",
+        "port": 80,
+        "timeout": 30,
+        "schedule": 60
+    }
+}
