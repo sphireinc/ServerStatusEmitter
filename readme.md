@@ -7,8 +7,7 @@ A server status emitter for multi-server deployments. Reports a JSON object back
 ```
 #!bash
 
-$ apt-get install python2.7
-$ apt-get install python-pip
+$ apt-get install python2.7 python-pip python-dev
 $ pip install -r requirements.txt
 $ supervisord main.py
 ```
