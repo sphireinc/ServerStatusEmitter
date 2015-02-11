@@ -10,9 +10,11 @@ class Transport():
 
         http = Http()
         url = config['host'] + ((":" + str(config['port'])) if config['port'] else "")
+        print url
         resp, content = http.request(url, "POST", payload)
         resp = [resp.get('status', ''), resp.get('content-length', ''),
                 resp.get('transfer-encoding', ''), resp.get('server', ''), 
                 resp.get('date', ''), resp.get('content-type', '')]
+        print resp
 
-        logging.info("End transport: " + resp)
+        logging.info("End transport: " + str(resp))
