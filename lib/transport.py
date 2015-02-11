@@ -1,4 +1,4 @@
-from httplib2 import Http
+import requests
 import logging
 
 class Transport():
@@ -8,16 +8,15 @@ class Transport():
                             datefmt='%H:%M:%S', level=logging.INFO)
         logging.info("Start transport")
 
-        http = Http()
         url = config['host'] + ((":" + str(config['port'])) if config['port'] else "")
-        print url
-        resp, content = http.request(url, "POST", payload)
-        resp = {"status":               resp.get('status', ''), 
-                "content-length":       resp.get('content-length', ''),
-                "transfer-encoding":    resp.get('transfer-encoding', ''), 
-                "server":               resp.get('server', ''), 
-                "date":                 resp.get('date', ''), 
-                "content-type":         resp.get('content-type', '')}
-        print resp
+        response = requests.post(url, data=payload)
 
-        logging.info("End transport: " + str(resp))
+        response = { "status_code": response.status_code,
+                     "encoding": response.encoding,
+                     "headers": response.headers,
+                     "content": response.text
+                   }
+
+        print response
+
+        logging.info("End transport: " + str(response))
