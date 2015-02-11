@@ -7,6 +7,7 @@ from lib import cpu, memory, disks, network, system, transport
 
 def main_loop():
     config = (json.loads(open("config.json").read()))['mothership']
+    print config
     cpu.CPU.cpu_count()
     last_run = time.time()
 
