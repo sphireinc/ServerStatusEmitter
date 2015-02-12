@@ -3,11 +3,10 @@
 import sys
 import json
 import time
+import sched
 from lib import cpu, memory, disks, network, system, transport
 
-def main():
-    config = (json.loads(open("config.json").read()))['mothership']
-
+def main(scheduler, config):
     payload = {
         "cpu": [
             cpu.CPU.cpu_count(),
@@ -34,10 +33,18 @@ def main():
     }
     payload = json.dumps(payload)
     transport.Transport(payload, config)
+    del payload
+
+    # Schedule a new run at the specified interval
+    scheduler.enter(config['interval'], 1, main, (scheduler, config))
+    scheduler.run()
 
 if __name__ == '__main__':
     try:
-        main()
+        config = (json.loads(open("config.json").read()))['mothership']
+        scheduler = sched.scheduler(time.time, time.sleep)
+        scheduler.enter(config['interval'], 1, main, (scheduler, config))
+        scheduler.run()
     except KeyboardInterrupt:
         print >> sys.stderr, '\nExiting by user request.\n'
         sys.exit(1)

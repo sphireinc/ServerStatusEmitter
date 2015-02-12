@@ -2,6 +2,6 @@
     "mothership": {
         "host": "http://mothership.serverstatusmonitoring.com",
         "port": 80,
-        "schedule": 15
+        "interval": 5
     }
 }

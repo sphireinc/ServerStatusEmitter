@@ -2,6 +2,6 @@
     "mothership": {
         "host": "String - Qualified mothership URL",
         "port": "Integer - Qualified mothership port number",
-        "schedule": "Integer - Seconds between reports to mothership"
+        "interval": "Integer - Seconds between reports to mothership"
     }
 }
