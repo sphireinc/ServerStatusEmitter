@@ -1,7 +1,10 @@
 {
     "mothership": {
         "host": "String - Qualified mothership URL",
-        "port": "Integer - Qualified mothership port number",
-        "interval": "Integer - Seconds between reports to mothership"
+        "port": "Integer - Mothership port number",
+        "interval": "Integer - Seconds between local reports, must be lower than cache_timer"
+        "cache_time": "Integer - How often the Emitter will send reports to the mothership"
+        "log": "String - File to which the Emitter will write log to",
+        "log_level": "String - Log level (INFO|WARN) ",
     }
 }

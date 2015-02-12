@@ -33,3 +33,10 @@ class CPU:
         Return the number of logical CPUs in the system
         """
         return { "cpu_count": { "virtual": psutil.cpu_count(), "physical": psutil.cpu_count(logical=False) } }
+
+    @staticmethod
+    def cpu_load():
+        """
+        Return the load average
+        """
+        return { "load_average": { } }

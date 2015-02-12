@@ -7,7 +7,15 @@ import sched
 import logging
 from lib import cpu, memory, disks, network, system, transport
 
+__cache = []
+__cache_timer = 60
+__cache_keeper = 0
+
 def main(scheduler, config, logger):
+    global __cache
+    global __cache_timer
+    global __cache_keeper
+
     logger.info("Running scheduler")
     payload = {
         "cpu": [
@@ -34,11 +42,21 @@ def main(scheduler, config, logger):
         ]
     }
     payload = json.dumps(payload)
-    transport.Transport(payload, config, logger)
+
+    __cache.append(payload)
+
+    if __cache_keeper < __cache_timer:
+        __cache_keeper += config.get('interval')
+        print __cache_keeper
+    else:
+        payload = {"payload": __cache}
+        __cache_keeper = 0
+        transport.Transport(payload, config, logger)
+        __cache = []
 
     # Schedule a new run at the specified interval
     logger.info("Setting new scheduler")
-    scheduler.enter(config['interval'], 1, main, (scheduler, config, logger))
+    scheduler.enter(config.get('interval'), 1, main, (scheduler, config, logger))
     scheduler.run()
 
 if __name__ == '__main__':
@@ -51,6 +69,13 @@ if __name__ == '__main__':
                 datefmt='%H:%M:%S', level=log_level)
         logger = logging.getLogger('sse_logger')
 
+        __cache_timer = config['cache_time'] if 'cache_time' in config else 60
+
+        # If the interval is higher, just exit
+        if config['interval'] > __cache_timer:
+            print >> sys.stderr, "Report interval is higher than cache timer."
+            sys.exit(1)
+
         scheduler = sched.scheduler(time.time, time.sleep)
 
         main(scheduler, config, logger)
@@ -60,6 +85,6 @@ if __name__ == '__main__':
     except Exception as e:
         import traceback, os.path
         top = traceback.extract_stack()[-1]
-        location = '\n' + type(e).__name__ + '@' + os.path.basename(top[0]) + ':' + str(top[1])
+        location = '\n' + type(e).__name__ + '@' + top[0]
         print >> sys.stderr, location, '=>', str(e)
         sys.exit(1)
