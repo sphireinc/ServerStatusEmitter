@@ -47,4 +47,7 @@ if __name__ == '__main__':
         scheduler.run()
     except KeyboardInterrupt:
         print >> sys.stderr, '\nExiting by user request.\n'
+        sys.exit(0)
+    except Exception as e:
+        print >> sys.stderr, '\nUnknown error: ' + str(e)
         sys.exit(1)
