@@ -2,7 +2,7 @@
     "mothership": {
         "host": "http://mothership.serverstatusmonitoring.com",
         "port": 80,
-        "interval": 1,
+        "interval": 5,
         "log": "/var/log/sse.log"
     }
 }
