@@ -17,6 +17,4 @@ class Transport():
                      "content": response.text
                    }
 
-        print response
-
         logging.info("End transport: " + str(response))
