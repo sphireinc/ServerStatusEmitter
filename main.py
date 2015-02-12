@@ -38,25 +38,28 @@ def main(scheduler, config, logger):
 
     # Schedule a new run at the specified interval
     logger.info("Setting new scheduler")
-    scheduler.enter(config['interval'], 1, main, (scheduler, config))
+    scheduler.enter(config['interval'], 1, main, (scheduler, config, logger))
     scheduler.run()
 
 if __name__ == '__main__':
     try:
         config = (json.loads(open("config.json").read()))['mothership']
 
-        log_level = logging.WARN if config.get('log_level', '').upper() == "WARN" else logging.INFO
-        logger = logging.basicConfig(filename=config['log'], filemode='a',
-                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                     datefmt='%H:%M:%S', level=log_level)
-
+        log_level = logging.WARN if str(config.get('log_level')).upper() == "WARN" else logging.WARN
+        logging.basicConfig(filename=config['log'], filemode='a',
+                format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                datefmt='%H:%M:%S', level=log_level)
+        logger = logging.getLogger('sse_logger')
 
         scheduler = sched.scheduler(time.time, time.sleep)
-        scheduler.enter(config['interval'], 1, main, (scheduler, config, logger))
-        scheduler.run()
+
+        main(scheduler, config, logger)
     except KeyboardInterrupt:
         print >> sys.stderr, '\nExiting by user request.\n'
         sys.exit(0)
     except Exception as e:
-        print >> sys.stderr, '\nUnknown error: ' + str(e)
+        import traceback, os.path
+        top = traceback.extract_stack()[-1]
+        location = '\n' + type(e).__name__ + '@' + os.path.basename(top[0]) + ':' + str(top[1])
+        print >> sys.stderr, location, '=>', str(e)
         sys.exit(1)
