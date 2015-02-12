@@ -4,6 +4,7 @@ import sys
 import json
 import time
 import sched
+import logging
 from lib import cpu, memory, disks, network, system, transport
 
 def main(scheduler, config, logger):
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     try:
         config = (json.loads(open("config.json").read()))['mothership']
 
-        log_level = logging.WARN if config.get('log_level').upper() == "WARN" else logging.INFO
+        log_level = logging.WARN if config.get('log_level', '').upper() == "WARN" else logging.INFO
         logger = logging.basicConfig(filename=config['log'], filemode='a',
                      format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                      datefmt='%H:%M:%S', level=log_level)

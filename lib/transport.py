@@ -1,5 +1,4 @@
 import requests
-import logging
 
 class Transport():
     def __init__(self, payload, config, logger):
