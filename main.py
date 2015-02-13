@@ -11,7 +11,6 @@ __cache = []
 __cache_timer = 0
 __cache_keeper = 0
 
-@profile
 def main(scheduler, config, sock):
     global __cache
     global __cache_timer
