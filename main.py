@@ -11,6 +11,7 @@ __cache = []
 __cache_timer = 0
 __cache_keeper = 0
 
+@profile
 def main(scheduler, config, sock):
     global __cache
     global __cache_timer
@@ -50,7 +51,6 @@ def main(scheduler, config, sock):
 
     if __cache_keeper < __cache_timer:
         __cache_keeper += config.get('interval')
-        print __cache_keeper
     else:
         transport.Transport({"payload": __cache}, config, sock)
         __cache_keeper = 0
