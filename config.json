@@ -1,10 +1,10 @@
 {
     "mothership": {
-        "host": "http://mothership.serverstatusmonitoring.com",
-        "port": 80,
+        "host": "127.0.0.1",
+        "port": 1336,
         "interval": 1,
         "log": "/var/log/sse.log",
         "log_level": "INFO",
-        "cache_time": 5
+        "cache_time": 1
     }
 }
