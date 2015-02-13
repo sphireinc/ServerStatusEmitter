@@ -1,10 +1,16 @@
 {
-    "mothership": {
-        "host": "127.0.0.1",
-        "port": 1336,
-        "interval": 1,
-        "log": "/var/log/sse.log",
-        "log_level": "INFO",
-        "cache_time": 1
+    "config": {
+        "mothership": {
+            "host": "127.0.0.1",
+            "port": 1336
+        },
+        "cache": {
+            "enabled": true,
+            "time_seconds_to_cache_between_sends": 5,
+            "interval_seconds_between_captures": 1
+        },
+        "identification": {
+            "id": "acb6b6e1bbc8880cef8ec2bc1cc48b7a"
+        }
     }
 }

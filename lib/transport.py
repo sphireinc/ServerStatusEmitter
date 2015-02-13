@@ -1,7 +1,7 @@
 import socket
 
 class Transport():
-    def __init__(self, payload, config, logger):
+    def __init__(self, payload, config, sock):
 #        logger.info("Start transport")
         print "Send"
 
@@ -9,10 +9,9 @@ class Transport():
         #response = requests.post(url, data=payload)
 
         payload = str(payload)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        print sock, config
 #        sock.setblocking(0)
-        sock.sendto(payload, (config['host'], config['port']))
+        sock.sendto(payload, (config.get('mothership').get('host'), 
+                              config.get('mothership').get('port')))
 
         #response = { "status_code": response.status_code,
         #             "encoding": response.encoding,

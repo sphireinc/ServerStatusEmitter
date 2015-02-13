@@ -4,20 +4,25 @@ import sys
 import json
 import time
 import sched
-import logging
+import socket
 from lib import cpu, memory, disks, network, system, transport
 
 __cache = []
-__cache_timer = 60
+__cache_timer = 0
 __cache_keeper = 0
 
-def main(scheduler, config, logger):
+def main(scheduler, config, sock):
     global __cache
     global __cache_timer
     global __cache_keeper
 
-    logger.info("Running scheduler")
     payload = {
+        "_id": {
+            "time": time.time(),
+            "id": config['identification']['id'],
+            "hostname": config['identification'].get('hostname', socket.gethostname()),
+            "type": config['identification'].get('type', 'false')
+        },
         "cpu": [
             cpu.CPU.cpu_count(),
             cpu.CPU.cpu_percent(),
@@ -41,50 +46,41 @@ def main(scheduler, config, logger):
             system.System.boot_time()
         ]
     }
-    payload = json.dumps(payload)
-
-    __cache.append(payload)
+    __cache.append(json.dumps(payload))
 
     if __cache_keeper < __cache_timer:
         __cache_keeper += config.get('interval')
         print __cache_keeper
     else:
-        payload = {"payload": __cache}
+        transport.Transport({"payload": __cache}, config, sock)
         __cache_keeper = 0
-        transport.Transport(payload, config, logger)
         __cache = []
 
     # Schedule a new run at the specified interval
-    logger.info("Setting new scheduler")
-    scheduler.enter(config.get('interval'), 1, main, (scheduler, config, logger))
+    scheduler.enter(config['interval'], 1, main, (scheduler, config, sock))
     scheduler.run()
 
 if __name__ == '__main__':
     try:
-        config = (json.loads(open("config.json").read()))['mothership']
+        config = (json.loads(open("config.json").read()))['config']
 
-        log_level = logging.WARN if str(config.get('log_level')).upper() == "WARN" else logging.WARN
-        logging.basicConfig(filename=config['log'], filemode='a',
-                format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                datefmt='%H:%M:%S', level=log_level)
-        logger = logging.getLogger('sse_logger')
+        config['disable_cache'] = False
+        if config['cache'].get('enabled') is True:
+            __cache_timer = config['cache'].get('time_seconds_to_cache_between_sends', 60)
+            config['interval'] = config['cache'].get('interval_seconds_between_captures', 5)
 
-        __cache_timer = config['cache_time'] if 'cache_time' in config else 60
+            # If the interval is higher, just exit
+            if config['interval'] > __cache_timer:
+                print >> sys.stderr, "Report interval is higher than cache timer."
+                sys.exit(1)
 
-        # If the interval is higher, just exit
-        if config['interval'] > __cache_timer:
-            print >> sys.stderr, "Report interval is higher than cache timer."
-            sys.exit(1)
-
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         scheduler = sched.scheduler(time.time, time.sleep)
-
-        main(scheduler, config, logger)
+        main(scheduler, config, sock)
     except KeyboardInterrupt:
         print >> sys.stderr, '\nExiting by user request.\n'
         sys.exit(0)
     except Exception as e:
-        import traceback, os.path
-        top = traceback.extract_stack()[-1]
-        location = '\n' + type(e).__name__ + '@' + top[0]
+        location = '\n' + type(e).__name__
         print >> sys.stderr, location, '=>', str(e)
         sys.exit(1)
