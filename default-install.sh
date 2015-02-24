@@ -32,7 +32,7 @@ fi;
 echo ""
 
 # Make the log directory for supervisord if not exists
-if [[ -d "/var/log/supervisord" && ! -L "/var/log/supervisord" ]]; then
+if [[ -d "/var/log/supervisor" && ! -L "/var/log/supervisor" ]]; then
     echo "Creating supervisord log directory"
     mkdir /var/log/supervisord
 else
@@ -42,7 +42,7 @@ fi
 echo ""
 
 # Make the log file for supervisord if not exists
-if [ -f "/var/log/supervisord/supervisord.log" ]; then
+if [ -f "/var/log/supervisor/supervisord.log" ]; then
     echo "Creating supervisord log file in supervisord log directory"
     touch /var/log/supervisord/supervisord.log
 else
