@@ -21,8 +21,6 @@ class CPU:
                 "physical": self.psutil.cpu_count(logical=False)
             }
 
-        print check_output(["cat", "/proc/loadavg"])
-
         return {
             "cpu_percent": self.psutil.cpu_percent(interval=1, percpu=True),
             "cpu_times": {
