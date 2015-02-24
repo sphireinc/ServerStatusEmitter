@@ -1,3 +1,14 @@
+# Install supervisor if not installed
+PKG_OK=$(dpkg-query -W --showformat='${Status}\n' supervisor|grep "install ok installed")
+if [ "" == "$PKG_OK" ]; then
+    echo "Installing supervisor"
+    apt-get --force-yes --yes install supervisor
+else
+    echo "Detected supervisor installed already"
+fi;
+
+echo ""
+
 # Install python2.7 if not installed
 PKG_OK=$(dpkg-query -W --showformat='${Status}\n' python2.7|grep "install ok installed")
 if [ "" == "$PKG_OK" ]; then
