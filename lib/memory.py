@@ -8,7 +8,10 @@ class Memory:
         """
         Generate a snapshot of the current memory state
         """
+        virtual_memory = self.psutil.virtual_memory
+        swap_memory = self.psutil.swap_memory()
+
         return {
-            "virtual": self.psutil.virtual_memory(),
-            "swap": self.psutil.swap_memory()
+            "virtual": virtual_memory._asdict(),
+            "swap": swap_memory._asdict()
         }

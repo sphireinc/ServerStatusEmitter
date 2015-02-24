@@ -9,5 +9,5 @@ class Network:
         Generate a snapshot of the current network state
         """
         return {
-            "net_io_counters": self.psutil.net_io_counters()
+            "net_io_counters": self.psutil.net_io_counters(pernic=True)
         }

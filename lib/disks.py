@@ -13,7 +13,7 @@ class Disks:
         """
         # Only grab the disk partitions every 25th pass
         if self.disk_partitions is None or self.disk_passthrough % 25 == 0:
-            self.disk_partitions = self.psutil.disk_partitions()
+            self.disk_partitions = self.psutil.disk_partitions(all=True)
 
         # Only grab the disk usage every 5th pass
         if self.disk_usage is None or self.disk_passthrough % 5 == 0:
@@ -24,5 +24,5 @@ class Disks:
         return {
             "disk_usage": self.disk_usage,
             "disk_partitions": self.disk_partitions,
-            "disk_io_counters": self.psutil.disk_io_counters()
+            "disk_io_counters": self.psutil.disk_io_counters(perdisk=True)
         }
