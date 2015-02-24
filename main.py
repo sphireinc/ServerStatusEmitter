@@ -30,7 +30,7 @@ def main(scheduler, config, sock, hostname, callers):
         "network": callers['network'].snapshot(),
         "system": callers['system'].snapshot()
     }
-    __cache.append(json.dumps(payload))
+    __cache.append(payload)
 
     if __cache_keeper < __cache_timer:
         __cache_keeper += config['interval']
