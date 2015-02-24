@@ -1,3 +1,5 @@
+import subprocess
+
 class CPU:
     psutil = None
     cpu_count = {}
@@ -27,7 +29,5 @@ class CPU:
                 "idle": cpu_time[2]
             },
             "cpu_count": self.cpu_count,
-            "load_average": {
-
-            }
+            "load_average": subprocess.Popen(["cat", "/proc/loadavg"])
         }
