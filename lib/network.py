@@ -1,13 +1,11 @@
-import psutil
-
 class Network:
-    def __init__(self):
-        pass
+    psutil = None
 
-    @staticmethod
-    def net_io_counters():
-        return { "net_io_counters": psutil.net_io_counters() }
+    def __init__(self, psutil):
+        self.psutil = psutil
 
-    @staticmethod
-    def net_connections():
-        return { "net_connections()": psutil.net_connections() }
+    def snapshot(self):
+        return {
+            "net_io_counters": self.psutil.net_io_counters(),
+            "net_connections()": self.psutil.net_connections()
+        }

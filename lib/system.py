@@ -1,13 +1,11 @@
-import psutil
-
 class System:
-    def __init__(self):
-        pass
+    psutil = None
 
-    @staticmethod
-    def users():
-        return { "users": psutil.users() }
+    def __init__(self, psutil):
+        self.psutil = psutil
 
-    @staticmethod
-    def boot_time():
-        return { "boot_time": psutil.boot_time() }
+    def snapshot(self):
+        return {
+            "users": self.psutil.users(),
+            "boot_time": self.psutil.boot_time()
+        }

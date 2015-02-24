@@ -1,17 +1,12 @@
-import psutil
-
 class Disks:
-    def __init__(self):
-        pass
+    psutil = None
 
-    @staticmethod
-    def disk_partitions():
-        return { "disk_partitions": psutil.disk_partitions() }
+    def __init__(self, psutil):
+        self.psutil = psutil
 
-    @staticmethod
-    def disk_usage():
-        return { "disk_usage": psutil.disk_usage('/') }
-
-    @staticmethod
-    def disk_io_counters():
-        return { "disk_io_counters": psutil.disk_io_counters() }
+    def snapshot(self):
+        return {
+            "disk_usage": self.psutil.disk_usage('/'),
+            "disk_partitions": self.psutil.disk_partitions(),
+            "disk_io_counters": self.psutil.disk_io_counters()
+        }

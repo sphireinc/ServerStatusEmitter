@@ -1,5 +1,3 @@
-import socket
-
 class Transport():
     def __init__(self, payload, config, sock):
         payload = str(payload)

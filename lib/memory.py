@@ -1,13 +1,11 @@
-import psutil
-
 class Memory:
-    def __init__(self):
-        pass
+    psutil = None
 
-    @staticmethod
-    def virtual_memory():
-        return { "virtual": psutil.virtual_memory() }
+    def __init__(self, psutil):
+        self.psutil = psutil
 
-    @staticmethod
-    def swap_memory():
-        return { "swap": psutil.swap_memory() }
+    def snapshot(self):
+        return {
+            "virtual": self.psutil.virtual_memory(),
+            "swap": self.psutil.swap_memory()
+        }
