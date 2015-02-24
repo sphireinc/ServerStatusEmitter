@@ -31,25 +31,11 @@ fi;
 
 echo ""
 
-# Make the log directory for supervisord if not exists
-if [[ -d "/var/log/supervisor" && ! -L "/var/log/supervisor" ]]; then
-    echo "Creating supervisord log directory"
-    mkdir /var/log/supervisord
-else
-    echo "Detected supervisord log directory already exists."
-fi
+echo "Copying SSE_Python_supervisord.conf to /etc/supervisor/conf.d"
+cp SSE_Python_supervisord.conf /etc/supervisor/conf.d/SSE_Python_supervisord.conf
 
-echo ""
-
-# Make the log file for supervisord if not exists
-if [ -f "/var/log/supervisor/supervisord.log" ]; then
-    echo "Creating supervisord log file in supervisord log directory"
-    touch /var/log/supervisord/supervisord.log
-else
-    echo "Detected supervisord log file in supervisord log directory already exists."
-fi
-
-echo ""
+echo "Rereading and updating supervisorctl"
+supervisorctl reread && supervisorctl update
 
 # Install any requirements
 echo "Installing project requirements via pip"
