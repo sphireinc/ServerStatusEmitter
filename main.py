@@ -46,7 +46,7 @@ def main(scheduler, config, sock, hostname, callers):
 if __name__ == '__main__':
     try:
         config = (json.loads(open("config.json").read()))['config']
-        config['identification'] = config['identification'].get('type', 'false')
+        config['identification']['type'] = config['identification'].get('type', 'false')
 
         config['disable_cache'] = False
         if config['cache'].get('enabled') is True:
