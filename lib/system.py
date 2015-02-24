@@ -5,6 +5,9 @@ class System:
         self.psutil = psutil
 
     def snapshot(self):
+        """
+        Generate a snapshot of the current system state
+        """
         return {
             "users": self.psutil.users(),
             "boot_time": self.psutil.boot_time()
