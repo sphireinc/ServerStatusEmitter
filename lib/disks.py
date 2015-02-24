@@ -11,8 +11,8 @@ class Disks:
         """
         Generate a snapshot of the current disk state
         """
-        # Only grab the disk partitions every 10th pass
-        if self.disk_partitions is None or self.disk_passthrough % 10 == 0:
+        # Only grab the disk partitions every 25th pass
+        if self.disk_partitions is None or self.disk_passthrough % 25 == 0:
             self.disk_partitions = self.psutil.disk_partitions()
 
         # Only grab the disk usage every 5th pass
