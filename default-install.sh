@@ -20,7 +20,7 @@ if [ "" == "$PKG_OK" ]; then
 fi;
 
 # Make the log directory for supervisord if not exists
-if [ -d "/var/log/supervisord" && ! -L "/var/log/supervisord"]; then
+if [ -d "/var/log/supervisord" && ! -L "/var/log/supervisord" ]; then
     echo "Creating supervisord log directory"
     mkdir /var/log/supervisord
 fi
