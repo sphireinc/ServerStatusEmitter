@@ -25,7 +25,7 @@ func main() {
     }
 
     defer conn.Close()
-    var buf []byte = make([]byte, 10240)
+    var buf []byte = make([]byte, 1318080)
 
     for {
         time.Sleep(100 * time.Millisecond)
