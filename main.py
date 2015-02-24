@@ -35,7 +35,7 @@ def main(scheduler, config, sock, hostname, callers):
     if __cache_keeper < __cache_timer:
         __cache_keeper += config['interval']
     else:
-        transport.Transport({"payload": __cache}, config, sock)
+        transport.Transport({"payload": json.dumps(__cache)}, config, sock)
         __cache_keeper = 0
         __cache = []
 
