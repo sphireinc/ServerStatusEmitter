@@ -8,6 +8,7 @@ import sched
 import socket
 
 import psutil
+import requests
 
 from lib import cpu, memory, disks, network, system, transport
 
