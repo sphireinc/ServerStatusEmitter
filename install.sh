@@ -1,5 +1,6 @@
 #!/bin/bash
 
+release="RELEASE-1.2"
 packages=( git supervisor python2.7 python-dev python-pip )
 
 # Iterate over packages, check if they're installed, if not install
@@ -17,8 +18,8 @@ do
     echo ""
 done
 
-echo "Cloning git branch RELEASE-1.1"
-git clone https://bitbucket.org/sphire-development/serverstatusemitter.git -b RELEASE-1.1 --single-branch
+echo "Cloning git branch ${release}"
+git clone https://bitbucket.org/sphire-development/serverstatusemitter.git -b ${release} --single-branch
 
 echo "Copying SSE_Python_supervisord.conf to /etc/supervisor/conf.d"
 cp SSE_Python_supervisord.conf /etc/supervisor/conf.d/SSE_Python_supervisord.conf
