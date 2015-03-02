@@ -5,12 +5,16 @@ import json
 import time
 import sched
 import socket
+
 import psutil
+
 from lib import cpu, memory, disks, network, system, transport
+
 
 _cache = []
 _cache_timer = 0
 _cache_keeper = 0
+
 
 def main(scheduler, config, sock, hostname, callers):
     global _cache
@@ -35,13 +39,14 @@ def main(scheduler, config, sock, hostname, callers):
     if _cache_keeper < _cache_timer:
         _cache_keeper += config['interval']
     else:
-        transport.Transport({"payload": json.dumps(_cache)}, config, sock)
+        transport.Transport({ "payload": json.dumps(_cache) }, config, sock)
         _cache_keeper = 0
         _cache = []
 
     # Schedule a new run at the specified interval
     scheduler.enter(config['interval'], 1, main, (scheduler, config, sock, hostname, callers))
     scheduler.run()
+
 
 if __name__ == '__main__':
     try:
