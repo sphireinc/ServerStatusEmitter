@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 packages=( git supervisor python2.7 python-dev python-pip )
 

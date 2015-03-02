@@ -5,17 +5,21 @@ import json
 import time
 import sched
 import socket
+
 import psutil
+
 from lib import cpu, memory, disks, network, system, transport
 
-__cache = []
-__cache_timer = 0
-__cache_keeper = 0
+
+_cache = []
+_cache_timer = 0
+_cache_keeper = 0
+
 
 def main(scheduler, config, sock, hostname, callers):
-    global __cache
-    global __cache_timer
-    global __cache_keeper
+    global _cache
+    global _cache_timer
+    global _cache_keeper
 
     payload = {
         "_id": {
@@ -30,18 +34,19 @@ def main(scheduler, config, sock, hostname, callers):
         "network": callers['network'].snapshot(),
         "system": callers['system'].snapshot()
     }
-    __cache.append(payload)
+    _cache.append(payload)
 
-    if __cache_keeper < __cache_timer:
-        __cache_keeper += config['interval']
+    if _cache_keeper < _cache_timer:
+        _cache_keeper += config['interval']
     else:
-        transport.Transport({"payload": json.dumps(__cache)}, config, sock)
-        __cache_keeper = 0
-        __cache = []
+        transport.Transport({ "payload": json.dumps(_cache) }, config, sock)
+        _cache_keeper = 0
+        _cache = []
 
     # Schedule a new run at the specified interval
     scheduler.enter(config['interval'], 1, main, (scheduler, config, sock, hostname, callers))
     scheduler.run()
+
 
 if __name__ == '__main__':
     try:
@@ -50,11 +55,11 @@ if __name__ == '__main__':
 
         config['disable_cache'] = False
         if config['cache'].get('enabled') is True:
-            __cache_timer = config['cache'].get('time_seconds_to_cache_between_sends', 60)
+            _cache_timer = config['cache'].get('time_seconds_to_cache_between_sends', 60)
             config['interval'] = config['cache'].get('interval_seconds_between_captures', 5)
 
             # If the interval is higher, just exit
-            if config['interval'] > __cache_timer:
+            if config['interval'] > _cache_timer:
                 print >> sys.stderr, "Report interval is higher than cache timer."
                 sys.exit(1)
 
