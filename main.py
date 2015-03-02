@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from hashlib import md5
 import os
 import sys
 import json
@@ -14,12 +15,13 @@ from lib import cpu, memory, disks, network, system, transport
 _cache = []
 _cache_timer = 0
 _cache_keeper = 0
-
+_version = 1.0
 
 def main(scheduler, config, sock, hostname, callers):
     global _cache
     global _cache_timer
     global _cache_keeper
+    global _version
 
     payload = {
         "_id": {
@@ -32,8 +34,10 @@ def main(scheduler, config, sock, hostname, callers):
         "memory": callers['memory'].snapshot(),
         "disks": callers['disks'].snapshot(),
         "network": callers['network'].snapshot(),
-        "system": callers['system'].snapshot()
+        "system": callers['system'].snapshot(),
+        "version": _version
     }
+    payload['digest'] = md5(payload)
     _cache.append(payload)
 
     if _cache_keeper < _cache_timer:
@@ -46,6 +50,13 @@ def main(scheduler, config, sock, hostname, callers):
     # Schedule a new run at the specified interval
     scheduler.enter(config['interval'], 1, main, (scheduler, config, sock, hostname, callers))
     scheduler.run()
+
+
+def register(config):
+    """
+    Register this server/device with the mothership
+    """
+    return True
 
 
 if __name__ == '__main__':
@@ -73,7 +84,8 @@ if __name__ == '__main__':
             "network": network.Network(psutil),
             "system": system.System(psutil)
         }
-        main(scheduler, config, sock, hostname, callers)
+        if register():
+            main(scheduler, config, sock, hostname, callers)
     except KeyboardInterrupt:
         print >> sys.stderr, '\nExiting by user request.\n'
         sys.exit(0)
