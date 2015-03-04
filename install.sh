@@ -12,7 +12,7 @@ fi
 
 # Distribution detection
 KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon)"
-DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || uname -s)
+DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo ${KNOWN_DISTRIBUTION}  || grep -Eo ${KNOWN_DISTRIBUTION} /etc/issue 2>/dev/null || uname -s)
 if [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" ]; then
     OS="Debian"
 elif [ -f /etc/redhat-release -o "$DISTRIBUTION" == "RedHat" -o "$DISTRIBUTION" == "CentOS" -o "$DISTRIBUTION" == "openSUSE" -o "$DISTRIBUTION" == "Amazon" ]; then
@@ -23,14 +23,14 @@ elif [ -f /etc/system-release -o "$DISTRIBUTION" == "Amazon" ]; then
 fi
 
 # Define the install command
-if [ $OS == "RedHat" ]; then
-    $install_cmd="yum -y install"
-    $install_ok="is not installed"
-    $install_check_cmd="rpm -qi"
-elif [$OS == "Debian"]; then
-    $install_cmd="apt-get --force-yes --yes install"
-    $install_ok="install ok installed"
-    $install_check_cmd="dpkg-query -W --showformat='${Status}\n'"
+if [ ${OS} == "RedHat" ]; then
+    install_cmd="yum -y install"
+    install_ok="is not installed"
+    install_check_cmd="rpm -qi"
+elif [ ${OS} == "Debian" ]; then
+    install_cmd="apt-get --force-yes --yes install"
+    install_ok="install ok installed"
+    install_check_cmd="dpkg-query -W \n'"
 fi
 
 # Define elevation command (to root)
