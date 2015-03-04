@@ -2,6 +2,7 @@
 
 release="RELEASE-1.2"
 packages=( git supervisor python2.7 python-dev python-pip )
+install_dir="/opt/sse/"
 
 # Define the download command
 if [ $(which curl) ]; then
@@ -53,14 +54,16 @@ do
 done
 
 echo "Cloning git branch ${release}"
-git clone https://bitbucket.org/sphire-development/serverstatusemitter.git -b ${release} --single-branch
+git clone https://bitbucket.org/sphire-development/serverstatusemitter.git -b ${release} --single-branch ${install_dir}
+
+cd ${install_dir}
 
 echo "Copying SSE_Python_supervisord.conf to /etc/supervisor/conf.d"
-cp SSE_Python_supervisord.conf /etc/supervisor/conf.d/SSE_Python_supervisord.conf
+cp ${install_dir}SSE_Python_supervisord.conf /etc/supervisor/conf.d/SSE_Python_supervisord.conf
 
 echo "Rereading and updating supervisorctl"
 supervisorctl reread && supervisorctl update
 
 # Install any requirements
 echo "Installing project requirements via pip"
-pip install -r requirements.txt
+pip install -r ${install_dir}requirements.txt
