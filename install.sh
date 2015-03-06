@@ -2,6 +2,7 @@
 
 release="RELEASE-1.2"
 packages=( git supervisor python2.7 python-dev python-pip )
+install_dir="/opt/sse/"
 
 # Define the download command
 if [ $(which curl) ]; then
@@ -12,7 +13,7 @@ fi
 
 # Distribution detection
 KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon)"
-DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || uname -s)
+DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo ${KNOWN_DISTRIBUTION}  || grep -Eo ${KNOWN_DISTRIBUTION} /etc/issue 2>/dev/null || uname -s)
 if [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" ]; then
     OS="Debian"
 elif [ -f /etc/redhat-release -o "$DISTRIBUTION" == "RedHat" -o "$DISTRIBUTION" == "CentOS" -o "$DISTRIBUTION" == "openSUSE" -o "$DISTRIBUTION" == "Amazon" ]; then
@@ -23,14 +24,14 @@ elif [ -f /etc/system-release -o "$DISTRIBUTION" == "Amazon" ]; then
 fi
 
 # Define the install command
-if [ $OS == "RedHat" ]; then
-    $install_cmd="yum -y install"
-    $install_ok="is not installed"
-    $install_check_cmd="rpm -qi"
-elif [$OS == "Debian"]; then
-    $install_cmd="apt-get --force-yes --yes install"
-    $install_ok="install ok installed"
-    $install_check_cmd="dpkg-query -W --showformat='${Status}\n'"
+if [ ${OS} == "RedHat" ]; then
+    install_cmd="yum -y install"
+    install_ok="is not installed"
+    install_check_cmd="rpm -qi"
+elif [ ${OS} == "Debian" ]; then
+    install_cmd="apt-get --force-yes --yes install"
+    install_ok="install ok installed"
+    install_check_cmd="dpkg-query -W \n'"
 fi
 
 # Define elevation command (to root)
@@ -53,14 +54,16 @@ do
 done
 
 echo "Cloning git branch ${release}"
-git clone https://bitbucket.org/sphire-development/serverstatusemitter.git -b ${release} --single-branch
+git clone https://bitbucket.org/sphire-development/serverstatusemitter.git -b ${release} --single-branch ${install_dir}
+
+cd ${install_dir}
 
 echo "Copying SSE_Python_supervisord.conf to /etc/supervisor/conf.d"
-cp SSE_Python_supervisord.conf /etc/supervisor/conf.d/SSE_Python_supervisord.conf
+cp ${install_dir}SSE_Python_supervisord.conf /etc/supervisor/conf.d/SSE_Python_supervisord.conf
 
 echo "Rereading and updating supervisorctl"
 supervisorctl reread && supervisorctl update
 
 # Install any requirements
 echo "Installing project requirements via pip"
-pip install -r requirements.txt
+pip install -r ${install_dir}requirements.txt
