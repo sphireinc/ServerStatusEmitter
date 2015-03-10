@@ -12,11 +12,6 @@ import requests
 
 from lib import cpu, memory, disks, network, system, transport
 
-from guppy import hpy
-h = hpy()
-h.setref()
-
-
 _cache = []
 _cache_timer = 0
 _cache_keeper = 0
@@ -53,9 +48,6 @@ def main(scheduler, config, sock, hostname, callers):
         transport.Transport({ "payload": json.dumps(_cache) }, config, sock)
         _cache_keeper = 0
         _cache = []
-        print "HEAP"
-        global h
-        print h.heap()
 
     # Schedule a new run at the specified interval
     scheduler.enter(config['interval'], 1, main, (scheduler, config, sock, hostname, callers))
