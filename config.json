@@ -6,7 +6,7 @@
         },
         "cache": {
             "enabled": true,
-            "time_seconds_to_cache_between_sends": 1,
+            "time_seconds_to_cache_between_sends": 5,
             "interval_seconds_between_captures": 1
         },
         "identification": {
