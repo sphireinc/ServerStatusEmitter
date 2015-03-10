@@ -1,4 +1,6 @@
 class System:
+    __slots__ = ['psutil']
+
     psutil = None
 
     def __init__(self, psutil):

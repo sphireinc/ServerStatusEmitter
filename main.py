@@ -12,6 +12,10 @@ import requests
 
 from lib import cpu, memory, disks, network, system, transport
 
+from guppy import hpy
+h = hpy()
+h.setref()
+
 
 _cache = []
 _cache_timer = 0
@@ -38,8 +42,10 @@ def main(scheduler, config, sock, hostname, callers):
         "system": callers['system'].snapshot(),
         "version": _version
     }
-    payload['digest'] = md5(payload)
+    payload["digest"] = md5(str(payload)).hexdigest()
+
     _cache.append(payload)
+    del payload
 
     if _cache_keeper < _cache_timer:
         _cache_keeper += config['interval']
@@ -47,6 +53,9 @@ def main(scheduler, config, sock, hostname, callers):
         transport.Transport({ "payload": json.dumps(_cache) }, config, sock)
         _cache_keeper = 0
         _cache = []
+        print "HEAP"
+        global h
+        print h.heap()
 
     # Schedule a new run at the specified interval
     scheduler.enter(config['interval'], 1, main, (scheduler, config, sock, hostname, callers))
@@ -85,7 +94,7 @@ if __name__ == '__main__':
             "network": network.Network(psutil),
             "system": system.System(psutil)
         }
-        if register():
+        if register(3):
             main(scheduler, config, sock, hostname, callers)
     except KeyboardInterrupt:
         print >> sys.stderr, '\nExiting by user request.\n'

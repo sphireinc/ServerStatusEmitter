@@ -1,4 +1,6 @@
 class Disks:
+    __slots__ = ['psutil', 'disk_usage', 'disk_partitions', 'disk_passthrough']
+
     psutil = None
     disk_usage = None
     disk_partitions = None

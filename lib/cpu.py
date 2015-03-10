@@ -1,7 +1,9 @@
 from subprocess import check_output
 
 
-class CPU:
+class CPU:    
+    __slots__ = ['psutil', 'cpu_count', 'cpu_passthrough']
+
     psutil = None
     cpu_count = { }
     cpu_passthrough = 0
