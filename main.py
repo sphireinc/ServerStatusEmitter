@@ -43,8 +43,10 @@ def main(scheduler, config, sock, hostname, callers):
     del payload
 
     if _cache_keeper < _cache_timer:
+        print "kept"
         _cache_keeper += config['interval']
     else:
+        print _cache_keeper
         transport.Transport({ "payload": json.dumps(_cache) }, config, sock)
         _cache_keeper = 0
         _cache = []
