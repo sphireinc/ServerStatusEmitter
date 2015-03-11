@@ -1,9 +1,11 @@
 package main
 
 import (
-	"helper"
-    "collector"
+	"collector"
 	"fmt"
+	"helper"
+	"log"
+	"os"
 )
 
 var (
@@ -14,6 +16,7 @@ var (
 	hostname                     = ""
 	ipAddress                    = ""
 	accountId                    = ""
+	log_file                     = "/var/log/sphire-sse.log"
 )
 
 type Snapshot struct {
@@ -31,22 +34,35 @@ type Cache struct {
 }
 
 func main() {
+	logger, err := os.OpenFile(log_file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("Unable to secure log: " + log_file)
+		os.Exit(1)
+	}
+	defer logger.Close()
+	log.SetOutput(logger)
+
+	log.Println(helper.Trace() + "Correctly initialized log in main()")
+
 	initialize()
 	// register()
 	// sleep(collect_frequency_in_seconds):
 	//     collector()
 	//     if current_collection == report_frequency_in_seconds:
 	//         sender()
+
+	fmt.Println(ipAddress)
 }
 
 func initialize() (bool, error) {
-	ipAddress, err := helper.ExternalIP()
+	var err error = nil
+
+	ipAddress, err = helper.GetServerExternalIPAddress()
 	if err != nil {
 		fmt.Println(err)
-        return false, err
+		return false, err
 	}
-	fmt.Println(ipAddress)
-    return true, err
+	return true, err
 }
 
 func register() {
@@ -55,10 +71,10 @@ func register() {
 
 func (Snapshot *Snapshot) collector() *Snapshot {
 
-    return Snapshot
+	return Snapshot
 }
 
 func (Cache *Cache) sender() bool {
 
-    return true
+	return true
 }
