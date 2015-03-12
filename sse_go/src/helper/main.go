@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net"
 	"runtime"
+	"strconv"
 )
 
 func main() {
@@ -56,6 +57,6 @@ func Trace() string {
 	runtime.Callers(2, pc)
 	f := runtime.FuncForPC(pc[0])
 	file, line := f.FileLine(pc[0])
-	trace := string(file) + " " + string(line) + " " + f.Name() + ": "
+	trace := string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): "
 	return trace
 }
