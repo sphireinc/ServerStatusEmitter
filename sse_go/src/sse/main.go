@@ -47,12 +47,12 @@ type Configuration struct {
  of the collector package.
 */
 type Snapshot struct {
-	CPU     *collector.CPU
-	Disks   *collector.Disks
-	Memory  *collector.Memory
-	Network *collector.Network
-	System  *collector.System
-	Time    time.Time
+	CPU     *collector.CPU `json:"cpu"`
+	Disks   *collector.Disks `json:"disks"`
+	Memory  *collector.Memory `json:"memory"`
+	Network *collector.Network `json:"network"`
+	System  *collector.System `json:"system"`
+	Time    time.Time `json:"system_time"`
 }
 
 /*
@@ -60,13 +60,13 @@ type Snapshot struct {
  Also includes the program Version and AccountId - the latter of which is gleaned from the configuration.
 */
 type Cache struct {
-	Node      []*Snapshot
-	AccountId string
-	Version   string
+	Node      []*Snapshot `json:"node"`
+	AccountId string `json:"account_id"`
+	Version   string `json:"version"`
 
-	OrganizationID   string
-	OrganizationName string
-	MachineNickname  string
+	OrganizationID   string `json:"organization_id"`
+	OrganizationName string `json:"organization_name"`
+	MachineNickname  string `json:"machine_nickname"`
 }
 
 /*
