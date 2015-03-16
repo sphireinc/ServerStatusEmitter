@@ -5,10 +5,10 @@ import (
 )
 
 type CPU struct {
-	CPUTimesStat CPUTimesStat
-	CPUInfoStat CPUInfoStat
-	CPUCount int
-	CPUCountLogical int
+	CPUTimesStat CPUTimesStat `json:"cpu_time_stat"`
+	CPUInfoStat CPUInfoStat `json:"cpu_info_stat"`
+	CPUCount int `json:"cpu_count"`
+	CPUCountLogical int `json:"cpu_count_logical"`
 }
 
 type CPUTimesStat struct {

@@ -1,11 +1,11 @@
 package collector
 
 type Network struct {
-	Addr              Addr
-	NetInterfaceAddr  NetInterfaceAddr
-	NetIOCountersStat NetIOCountersStat
-	NetConnectionStat NetConnectionStat
-	NetInterfaceStat  NetInterfaceStat
+	Addr              Addr `json:"address"`
+	NetInterfaceAddr  NetInterfaceAddr `json:"network_interface_address"`
+	NetIOCountersStat NetIOCountersStat `json:"network_io_counter_stat"`
+	NetConnectionStat NetConnectionStat `json:"network_connection_stat"`
+	NetInterfaceStat  NetInterfaceStat `json:"network_interface_stat"`
 }
 
 type Addr struct {
