@@ -14,14 +14,14 @@ import (
 	"helper"
 	"log"
 	"os"
-	"time"
 	"runtime"
+	"time"
 )
 
 var (
 	mothership_url               = "http://mothership.serverstatusmonitoring.com"
 	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 5       // When to report all snapshots in cache
+	report_frequency_in_seconds  = 2       // When to report all snapshots in cache
 	version                      = "1.0.0" // The version of SSE this is
 	hostname                     = ""
 	ipAddress                    = ""
@@ -52,6 +52,7 @@ type Snapshot struct {
 	Memory  *collector.Memory
 	Network *collector.Network
 	System  *collector.System
+	Time    time.Time
 }
 
 /*
@@ -62,8 +63,11 @@ type Cache struct {
 	Node      []*Snapshot
 	AccountId string
 	Version   string
-}
 
+	OrganizationID   string
+	OrganizationName string
+	MachineNickname  string
+}
 
 /*
 Run Program entry point which initializes, registers and runs the main scheduler of the
@@ -73,13 +77,13 @@ func Run() {
 	// Define the global logger
 	logger, err := os.OpenFile(log_file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
+		log.Println(helper.Trace("Unable to secure log: "+log_file, "ERROR"))
 		fmt.Println("Unable to secure log: " + log_file)
 		os.Exit(1)
 	}
 	defer logger.Close()
 	log.SetOutput(logger)
 
-	log.Println()
 	log.Println(helper.Trace("**** Starting program ****", "OK"))
 
 	// Perform system initialization
@@ -89,24 +93,30 @@ func Run() {
 		os.Exit(1)
 	}
 
-	// Perform the system registration
-	Register()
+	log.Println(helper.Trace("Performing registration.", "OK"))
+	Register() // Perform the system registration
 	ticker := time.NewTicker(time.Duration(collect_frequency_in_seconds) * time.Second)
 
 	var counter int = 0
-	var cache Cache = Cache{ AccountId: configuration.Identification.AccountID, Version: version }
+	var cache Cache = Cache{
+		AccountId:        configuration.Identification.AccountID,
+		OrganizationID:   configuration.Identification.OrganizationID,
+		OrganizationName: configuration.Identification.OrganizationName,
+		MachineNickname:  configuration.Identification.MachineNickname,
+		Version:          version}
 
 	for {
 		<-ticker.C
 		if counter > 0 && counter%report_frequency_in_seconds == 0 {
 			fmt.Println("Sender")
-			runtime.GC()
 			cache.Sender()
 			cache.Node = nil // Clear the Node Cache
+			runtime.GC()
 			counter = 0
 		} else {
-			fmt.Println(counter, "Collecting "+time.Now().String())
-			var snapshot Snapshot = Snapshot{} // define a new Snapshot struct
+			fmt.Println("Collecting", time.Now().String())
+
+			var snapshot Snapshot = Snapshot{}
 			cache.Node = append(cache.Node, snapshot.Collector()) // fill in the Snapshot struct and add to the cache
 			counter++
 			ticker = updateTicker()
@@ -129,7 +139,6 @@ Initialize attempts to gather all the data for correct program initialization. L
 returns bool and error - if ever false, error will be set, otherwise if bool is true, error is nil.
 */
 func Initialize() (bool, error) {
-	log.Println(helper.Trace("Starting initialization.", "OK"))
 	var err error = nil
 
 	// Attempt to get the server IP address
@@ -156,7 +165,6 @@ func Initialize() (bool, error) {
 Register performs a registration of this instance with the mothership
 */
 func Register() {
-	log.Println(helper.Trace("Starting registration.", "OK"))
 
 	// TODO: Make call out to /register-service with ipAddress and registration
 
@@ -168,9 +176,23 @@ Collector collects a snapshot of the system at the time of calling and stores it
 Snapshot struct.
 */
 func (Snapshot *Snapshot) Collector() *Snapshot {
-	log.Println(helper.Trace("Starting collection.", "OK"))
+	Snapshot.Time = time.Now().Local()
 
-	log.Println(helper.Trace("Collection complete.", "OK"))
+	var CPU collector.CPU = collector.CPU{}
+	Snapshot.CPU = CPU.Collect()
+
+	var Disks collector.Disks = collector.Disks{}
+	Snapshot.Disks = Disks.Collect()
+
+	var Memory collector.Memory = collector.Memory{}
+	Snapshot.Memory = Memory.Collect()
+
+	var Network collector.Network = collector.Network{}
+	Snapshot.Network = Network.Collect()
+
+	var System collector.System = collector.System{}
+	Snapshot.System = System.Collect()
+
 	return Snapshot
 }
 
@@ -179,8 +201,10 @@ Sender sends the data in Cache to the mothership, then clears the Cache struct s
 accept new data.
 */
 func (Cache *Cache) Sender() bool {
-	log.Println(helper.Trace("Caching Snapshot", "OK"))
+	j, _ := json.Marshal(Cache)
 
-	log.Println(helper.Trace("Caching complete.", "OK"))
+	fmt.Println(string(j))
+	fmt.Println()
+
 	return true
 }

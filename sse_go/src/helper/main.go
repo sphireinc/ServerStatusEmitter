@@ -54,10 +54,16 @@ func GetServerExternalIPAddress() (string, error) {
 // Trace allows us to know which file and which function is executing at the moment.
 // It returns a string.
 func Trace(message string, status string) string {
-	pc := make([]uintptr, 10) // at least 1 entry needed
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	file, line := f.FileLine(pc[0])
-	trace := string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): " + strings.ToUpper(status) + " " + message
+	var debug bool
+	var trace string
+	if debug {
+		pc := make([]uintptr, 10) // at least 1 entry needed
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		trace = string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): " + strings.ToUpper(status) + " " + message
+	} else {
+		trace = strings.ToUpper(status) + " " + message
+	}
 	return trace
 }
