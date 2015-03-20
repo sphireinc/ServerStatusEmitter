@@ -18,7 +18,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"fmt"
 	"time"
 	"strings"
 )
@@ -129,7 +128,7 @@ func Run() {
 
 	if checkStatus() == false {
 		log.Println(helper.Trace("Mothership unreachable. Check your internet connection.", "ERROR"))
-		sys.Exit(1)
+		os.Exit(1)
 	}
 
 	// Perform system initialization
@@ -293,9 +292,6 @@ func Initialize() (bool, error) {
 		},
 	}
 
-	jsn, _ := json.Marshal(server)
-	fmt.Println(string(jsn))
-
 	if err != nil {
 		log.Println(helper.Trace("Initialization failed - could not load configuration.", "ERROR"))
 		return false, err
@@ -401,13 +397,13 @@ func (Cache *Cache) Sender() bool {
  checkStatus checks the status of the mothership
  */
 func checkStatus() bool {
-	req, err := http.NewRequest("GET", mothership_url+status_uri)
+	req, err := http.NewRequest("GET", mothership_url+status_uri, bytes.NewBuffer([]byte{}))
 	req.Header.Set("X-Custom-Header", "STS")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(helper.Trace("Unable to complete status request" + string(resp), "ERROR"))
+		log.Println(helper.Trace("Unable to complete status request", "ERROR"))
 		return false
 	}
 	defer resp.Body.Close()
