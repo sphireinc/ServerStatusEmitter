@@ -8,26 +8,34 @@ reporter with the mothership.
 package sse
 
 import (
+	"io/ioutil"
+	"bytes"
 	"collector"
 	"encoding/json"
-	"fmt"
 	"helper"
 	"log"
+	"net/http"
 	"os"
 	"runtime"
 	"time"
 )
 
 var (
-	mothership_url               = "http://mothership.serverstatusmonitoring.com"
-	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 2       // When to report all snapshots in cache
-	version                      = "1.0.0" // The version of SSE this is
-	hostname                     = ""
-	ipAddress                    = ""
-	log_file                     = "/var/log/sphire-sse.log"
-	configuration_file           = "/etc/sse/sse.conf"
-	configuration                = Configuration{}
+	mothership_url = "http://mothership.serverstatusmonitoring.com"
+	register_uri   = "/register-service"
+	collector_uri  = "/collector"
+	status_uri     = "/status"
+
+	collect_frequency_in_seconds = 1        // When to collect a snapshot and store in cache
+	report_frequency_in_seconds  = 60       // When to report all snapshots in cache
+	version                      = "1.0.0"  // The version of SSE this is
+
+	hostname  = ""
+	ipAddress = ""
+
+	log_file           = "/var/log/sphire-sse.log"
+	configuration_file = "/etc/sse/sse.conf"
+	configuration      = new(Configuration)
 )
 
 /*
@@ -35,11 +43,11 @@ var (
 */
 type Configuration struct {
 	Identification struct {
-		AccountID        string
-		OrganizationID   string
-		OrganizationName string
-		MachineNickname  string
-	}
+		AccountID        string `json:"account_id"`
+		OrganizationID   string `json:"organization_id"`
+		OrganizationName string `json:"organization_name"`
+		MachineNickname  string `json:"machine_nickname"`
+	} `json:"identification"`
 }
 
 /*
@@ -47,12 +55,12 @@ type Configuration struct {
  of the collector package.
 */
 type Snapshot struct {
-	CPU     *collector.CPU `json:"cpu"`
-	Disks   *collector.Disks `json:"disks"`
-	Memory  *collector.Memory `json:"memory"`
+	CPU     *collector.CPU     `json:"cpu"`
+	Disks   *collector.Disks   `json:"disks"`
+	Memory  *collector.Memory  `json:"memory"`
 	Network *collector.Network `json:"network"`
-	System  *collector.System `json:"system"`
-	Time    time.Time `json:"system_time"`
+	System  *collector.System  `json:"system"`
+	Time    time.Time          `json:"system_time"`
 }
 
 /*
@@ -61,8 +69,8 @@ type Snapshot struct {
 */
 type Cache struct {
 	Node      []*Snapshot `json:"node"`
-	AccountId string `json:"account_id"`
-	Version   string `json:"version"`
+	AccountId string      `json:"account_id"`
+	Version   string      `json:"version"`
 
 	OrganizationID   string `json:"organization_id"`
 	OrganizationName string `json:"organization_name"`
@@ -78,7 +86,6 @@ func Run() {
 	logger, err := os.OpenFile(log_file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Println(helper.Trace("Unable to secure log: "+log_file, "ERROR"))
-		fmt.Println("Unable to secure log: " + log_file)
 		os.Exit(1)
 	}
 	defer logger.Close()
@@ -93,8 +100,14 @@ func Run() {
 		os.Exit(1)
 	}
 
+	// Perform the system registration
 	log.Println(helper.Trace("Performing registration.", "OK"))
-	Register() // Perform the system registration
+	body, err := Register()
+	if err != nil {
+		log.Println(helper.Trace("Unable to register this machine", "ERROR"))
+		os.Exit(1)
+	}
+
 	ticker := time.NewTicker(time.Duration(collect_frequency_in_seconds) * time.Second)
 
 	var counter int = 0
@@ -108,14 +121,11 @@ func Run() {
 	for {
 		<-ticker.C
 		if counter > 0 && counter%report_frequency_in_seconds == 0 {
-			fmt.Println("Sender")
 			cache.Sender()
 			cache.Node = nil // Clear the Node Cache
 			runtime.GC()
 			counter = 0
 		} else {
-			fmt.Println("Collecting", time.Now().String())
-
 			var snapshot Snapshot = Snapshot{}
 			cache.Node = append(cache.Node, snapshot.Collector()) // fill in the Snapshot struct and add to the cache
 			counter++
@@ -150,8 +160,8 @@ func Initialize() (bool, error) {
 
 	// Load and parse configuration file
 	file, _ := os.Open(configuration_file)
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&configuration)
+	err = json.NewDecoder(file).Decode(configuration)
+
 	if err != nil {
 		log.Println(helper.Trace("Initialization failed - could not load configuration.", "ERROR"))
 		return false, err
@@ -164,11 +174,39 @@ func Initialize() (bool, error) {
 /*
 Register performs a registration of this instance with the mothership
 */
-func Register() {
+func Register() (string, error) {
+	var jsonStr = []byte(`{}`)
 
-	// TODO: Make call out to /register-service with ipAddress and registration
+	// local struct
+	registrationObject := map[string]interface{}{
+		"configuration":     configuration,
+		"mothership_url":    mothership_url,
+		"register_uri":      register_uri,
+		"version":           version,
+		"collect_frequency": collect_frequency_in_seconds,
+		"report_frequency":  report_frequency_in_seconds,
+		"hostname":          hostname,
+		"ip_address":        ipAddress,
+		"log_file":          log_file,
+		"config_file":       configuration_file,
+	}
+
+	jsonStr, _ = json.Marshal(registrationObject)
+	req, err := http.NewRequest("POST", mothership_url+register_uri, bytes.NewBuffer(jsonStr))
+	req.Header.Set("X-Custom-Header", "REG")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, _ := ioutil.ReadAll(resp.Body)
 
 	log.Println(helper.Trace("Registration complete.", "OK"))
+	return string(body), nil
 }
 
 /*
@@ -201,10 +239,26 @@ Sender sends the data in Cache to the mothership, then clears the Cache struct s
 accept new data.
 */
 func (Cache *Cache) Sender() bool {
-	j, _ := json.Marshal(Cache)
+	var jsonStr = []byte(`{}`)
 
-	fmt.Println(string(j))
-	fmt.Println()
+	jsonStr, _ = json.Marshal(Cache)
+	req, err := http.NewRequest("POST", mothership_url+collector_uri, bytes.NewBuffer(jsonStr))
+	req.Header.Set("X-Custom-Header", "REG")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(helper.Trace("Unable to complete request", "ERROR"))
+		return false
+	}
+	defer resp.Body.Close()
+
+	read_body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(helper.Trace("Unable to complete request" + string(read_body), "ERROR"))
+		return false
+	}
 
 	return true
 }
