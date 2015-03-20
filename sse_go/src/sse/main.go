@@ -16,8 +16,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"runtime"
+	"fmt"
 	"time"
+	"strings"
 )
 
 var (
@@ -36,6 +39,7 @@ var (
 	log_file           = "/var/log/sphire-sse.log"
 	configuration_file = "/etc/sse/sse.conf"
 	configuration      = new(Configuration)
+	server			   = new(Server)
 )
 
 /*
@@ -64,11 +68,41 @@ type Snapshot struct {
 }
 
 /*
+ Server struct implements identifying data about the server.
+ */
+type Server struct {
+	IpAddress string `json:"ip_address"`
+	Hostname string `json:"hostname"`
+	OperatingSystem struct {
+	    // grepped from cat /etc/issue
+		Distributor string `json:"distributor_id`
+
+		// cat /proc/version_signature
+		VersionSignature string `json:"version_signature"`
+
+		// cat /proc/version
+		Version string `json:"version"`
+	} `json:"operating_system"`
+	Hardware struct {
+		// grepped from lscpu
+		Architecture string `json:"architecture"`
+		CPUOpMode string `json:"cpu_op_mode"`
+		CPUCount string `json:"cpu_count"`
+		CPUFamily string `json:"cpu_family"`
+		CPUModel string `json:"cpu_model"`
+		CPUMhz string `json:"cpu_mhz"`
+	} `json:"hardware"`
+}
+
+/*
  Cache struct implements multiple Snapshot structs. This is cleared after it is reported to the mothership.
  Also includes the program Version and AccountId - the latter of which is gleaned from the configuration.
 */
 type Cache struct {
 	Node      []*Snapshot `json:"node"`
+
+	Server	  *Server	`json:"server"`
+
 	AccountId string      `json:"account_id"`
 	Version   string      `json:"version"`
 
@@ -93,6 +127,11 @@ func Run() {
 
 	log.Println(helper.Trace("**** Starting program ****", "OK"))
 
+	if checkStatus() == false {
+		log.Println(helper.Trace("Mothership unreachable. Check your internet connection.", "ERROR"))
+		sys.Exit(1)
+	}
+
 	// Perform system initialization
 	_, err = Initialize()
 	if err != nil {
@@ -104,7 +143,7 @@ func Run() {
 	log.Println(helper.Trace("Performing registration.", "OK"))
 	body, err := Register()
 	if err != nil {
-		log.Println(helper.Trace("Unable to register this machine", "ERROR"))
+		log.Println(helper.Trace("Unable to register this machine" + string(body), "ERROR"))
 		os.Exit(1)
 	}
 
@@ -116,7 +155,8 @@ func Run() {
 		OrganizationID:   configuration.Identification.OrganizationID,
 		OrganizationName: configuration.Identification.OrganizationName,
 		MachineNickname:  configuration.Identification.MachineNickname,
-		Version:          version}
+		Version:          version,
+		Server: 		  server}
 
 	for {
 		<-ticker.C
@@ -150,6 +190,13 @@ returns bool and error - if ever false, error will be set, otherwise if bool is 
 */
 func Initialize() (bool, error) {
 	var err error = nil
+	var err_hstnm error = nil
+	var architecture string
+	var cpuOpMode string
+	var cpuCount string
+	var cpuFamily string
+	var cpuModel string
+	var cpuMhz string
 
 	// Attempt to get the server IP address
 	ipAddress, err = helper.GetServerExternalIPAddress()
@@ -158,9 +205,96 @@ func Initialize() (bool, error) {
 		return false, err
 	}
 
+	// Get the hostname
+	hostname, err_hstnm = os.Hostname()
+	if err_hstnm != nil {
+		hostname_bt, err_hstnm_exec := exec.Command("hostname").Output()
+		if err_hstnm_exec == nil {
+			hostname = string(hostname_bt)
+		}
+	}
+
 	// Load and parse configuration file
 	file, _ := os.Open(configuration_file)
 	err = json.NewDecoder(file).Decode(configuration)
+
+	// Get data about the server and store it in the struct
+	distributor, err_distributor := exec.Command("cat", "/etc/issue").Output()
+	if err_distributor != nil {
+		distributor = []byte{}
+	}
+
+	versionSignature, err_versig := exec.Command("cat", "/proc/version_signature").Output()
+	if err_versig != nil {
+		versionSignature = []byte{}
+	}
+
+	version, err_ver := exec.Command("cat", "/proc/version").Output()
+	if err_ver != nil {
+		version = []byte{}
+	}
+
+	hardware_out, err_hwd := exec.Command("lscpu").Output()
+	hardware := []string{}
+	if err_hwd == nil{
+		hardware = strings.Split(string(hardware_out), "\n")
+	}
+
+	max := len(hardware) - 1
+	for index, line := range hardware {
+		split_line := strings.Split(line, ":")
+		if index < max { // because index out of range if we dont have this
+			key := string(strings.TrimSpace(split_line[0]))
+			value := string(strings.TrimSpace(split_line[1]))
+
+			switch key {
+			case "Architecture":
+				architecture = value
+			case "CPU op-mode(s)":
+				cpuOpMode = value
+			case "CPU(s)":
+				cpuCount = value
+			case "CPU family":
+				cpuFamily = value
+			case "Model":
+				cpuModel = value
+			case "CPU MHz":
+				cpuMhz = value
+			}
+		}
+	}
+
+	server = &Server {
+		IpAddress: ipAddress,
+		Hostname: hostname,
+		OperatingSystem: struct {
+			Distributor string `json:"distributor_id`
+			VersionSignature string `json:"version_signature"`
+			Version string `json:"version"`
+		}{
+			Distributor: string(distributor),
+			VersionSignature: string(versionSignature),
+			Version: string(version),
+		},
+		Hardware: struct {
+			Architecture string `json:"architecture"`
+			CPUOpMode string `json:"cpu_op_mode"`
+			CPUCount string `json:"cpu_count"`
+			CPUFamily string `json:"cpu_family"`
+			CPUModel string `json:"cpu_model"`
+			CPUMhz string `json:"cpu_mhz"`
+		}{
+			Architecture: architecture,
+			CPUOpMode: cpuOpMode,
+			CPUCount: cpuCount,
+			CPUFamily: cpuFamily,
+			CPUModel: cpuModel,
+			CPUMhz: cpuMhz,
+		},
+	}
+
+	jsn, _ := json.Marshal(server)
+	fmt.Println(string(jsn))
 
 	if err != nil {
 		log.Println(helper.Trace("Initialization failed - could not load configuration.", "ERROR"))
@@ -243,7 +377,7 @@ func (Cache *Cache) Sender() bool {
 
 	jsonStr, _ = json.Marshal(Cache)
 	req, err := http.NewRequest("POST", mothership_url+collector_uri, bytes.NewBuffer(jsonStr))
-	req.Header.Set("X-Custom-Header", "REG")
+	req.Header.Set("X-Custom-Header", "SND")
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -257,6 +391,30 @@ func (Cache *Cache) Sender() bool {
 	read_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(helper.Trace("Unable to complete request" + string(read_body), "ERROR"))
+		return false
+	}
+
+	return true
+}
+
+/*
+ checkStatus checks the status of the mothership
+ */
+func checkStatus() bool {
+	req, err := http.NewRequest("GET", mothership_url+status_uri)
+	req.Header.Set("X-Custom-Header", "STS")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(helper.Trace("Unable to complete status request" + string(resp), "ERROR"))
+		return false
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(helper.Trace("Unable to complete status request" + string(body), "ERROR"))
 		return false
 	}
 
