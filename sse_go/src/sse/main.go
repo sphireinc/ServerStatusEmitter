@@ -29,7 +29,7 @@ var (
 	status_uri     = "/status"
 
 	collect_frequency_in_seconds = 1        // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 60       // When to report all snapshots in cache
+	report_frequency_in_seconds  = 15       // When to report all snapshots in cache
 	version                      = "1.0.0"  // The version of SSE this is
 
 	hostname  = ""
@@ -126,7 +126,8 @@ func Run() {
 
 	log.Println(helper.Trace("**** Starting program ****", "OK"))
 
-	if checkStatus() == false {
+	status := checkStatus()
+	if status == false {
 		log.Println(helper.Trace("Mothership unreachable. Check your internet connection.", "ERROR"))
 		os.Exit(1)
 	}
@@ -397,22 +398,20 @@ func (Cache *Cache) Sender() bool {
  checkStatus checks the status of the mothership
  */
 func checkStatus() bool {
-	req, err := http.NewRequest("GET", mothership_url+status_uri, bytes.NewBuffer([]byte{}))
-	req.Header.Set("X-Custom-Header", "STS")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(helper.Trace("Unable to complete status request", "ERROR"))
-		return false
+	type StatusBody struct {
+		Status string `json:"status"`
 	}
+	var status_body StatusBody
+
+	resp, err := http.Get(mothership_url+status_uri)
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(helper.Trace("Unable to complete status request" + string(body), "ERROR"))
+	json.Unmarshal(body, &status_body)
+	if err == nil && status_body.Status == "ok" {
+		return true
+	} else {
+		log.Println(helper.Trace("Unable to complete status request", "ERROR"))
 		return false
 	}
-
-	return true
 }
