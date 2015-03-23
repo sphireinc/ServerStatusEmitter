@@ -28,8 +28,8 @@ var (
 	collector_uri  = "/collector"
 	status_uri     = "/status"
 
-	collect_frequency_in_seconds = 2       // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 16      // When to report all snapshots in cache
+	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
+	report_frequency_in_seconds  = 2      // When to report all snapshots in cache
 	version                      = "1.0.0" // The version of SSE this is
 
 	hostname  = ""
@@ -65,12 +65,12 @@ type StatusBody struct {
  of the collector package.
 */
 type Snapshot struct {
-	CPU     <-chan *collector.CPU     `json:"cpu"`
-	Disks   <-chan *collector.Disks   `json:"disks"`
-	Memory  <-chan *collector.Memory  `json:"memory"`
-	Network <-chan *collector.Network `json:"network"`
-	System  <-chan *collector.System  `json:"system"`
-	Time    time.Time                 `json:"system_time"`
+	CPU     *collector.CPU     `json:"cpu"`
+	Disks   *collector.Disks   `json:"disks"`
+	Memory  *collector.Memory  `json:"memory"`
+	Network *collector.Network `json:"network"`
+	System  *collector.System  `json:"system"`
+	Time    time.Time          `json:"system_time"`
 }
 
 /*
@@ -362,19 +362,19 @@ func (Snapshot *Snapshot) Collector() *Snapshot {
 	Snapshot.Time = time.Now().Local()
 
 	var CPU collector.CPU = collector.CPU{}
-	Snapshot.CPU = CPU.Collect()
+	Snapshot.CPU = <- CPU.Collect()
 
 	var Disks collector.Disks = collector.Disks{}
-	Snapshot.Disks = Disks.Collect()
+	Snapshot.Disks = <- Disks.Collect()
 
 	var Memory collector.Memory = collector.Memory{}
-	Snapshot.Memory = Memory.Collect()
+	Snapshot.Memory = <- Memory.Collect()
 
 	var Network collector.Network = collector.Network{}
-	Snapshot.Network = Network.Collect()
+	Snapshot.Network = <- Network.Collect()
 
 	var System collector.System = collector.System{}
-	Snapshot.System = System.Collect()
+	Snapshot.System = <- System.Collect()
 
 	return Snapshot
 }
