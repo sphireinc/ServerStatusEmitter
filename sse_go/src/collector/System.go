@@ -3,7 +3,13 @@ package collector
 type System struct {
 }
 
-func (System *System) Collect() *System {
+func (SystemPtr *System) Collect() <-chan *System {
+	out := make(chan *System)
 
-	return System
+	go func() {
+
+		close(out)
+	}()
+
+	return out
 }

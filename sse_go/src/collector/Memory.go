@@ -32,32 +32,39 @@ type SwapMemoryStat struct {
 	Sout        uint64  `json:"sout"`
 }
 
-func (Memory *Memory) Collect() *Memory {
-	virtual, _ := psutil_mem.VirtualMemory()
-	swap, _ := psutil_mem.SwapMemory()
+func (MemoryPtr *Memory) Collect() <-chan *Memory {
+	out := make(chan *Memory)
 
-	Memory.VirtualMemoryStat = VirtualMemoryStat{
-		Total:       virtual.Total,
-		Available:   virtual.Available,
-		Used:        virtual.Used,
-		UsedPercent: virtual.UsedPercent,
-		Free:        virtual.Free,
-		Active:      virtual.Active,
-		Inactive:    virtual.Inactive,
-		Buffers:     virtual.Buffers,
-		Cached:      virtual.Cached,
-		Wired:       virtual.Wired,
-		Shared:      virtual.Shared,
-	}
+	go func() {
+		virtual, _ := psutil_mem.VirtualMemory()
+		swap, _ := psutil_mem.SwapMemory()
 
-	Memory.SwapMemoryStat = SwapMemoryStat{
-		Total:       swap.Total,
-		Used:        swap.Used,
-		Free:        swap.Free,
-		UsedPercent: swap.UsedPercent,
-		Sin:         swap.Sin,
-		Sout:        swap.Sout,
-	}
+		MemoryPtr.VirtualMemoryStat = VirtualMemoryStat{
+			Total:       virtual.Total,
+			Available:   virtual.Available,
+			Used:        virtual.Used,
+			UsedPercent: virtual.UsedPercent,
+			Free:        virtual.Free,
+			Active:      virtual.Active,
+			Inactive:    virtual.Inactive,
+			Buffers:     virtual.Buffers,
+			Cached:      virtual.Cached,
+			Wired:       virtual.Wired,
+			Shared:      virtual.Shared,
+		}
 
-	return Memory
+		MemoryPtr.SwapMemoryStat = SwapMemoryStat{
+			Total:       swap.Total,
+			Used:        swap.Used,
+			Free:        swap.Free,
+			UsedPercent: swap.UsedPercent,
+			Sin:         swap.Sin,
+			Sout:        swap.Sout,
+		}
+
+		out <- MemoryPtr
+		close(out)
+	}()
+
+	return out
 }

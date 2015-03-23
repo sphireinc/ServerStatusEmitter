@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"collector"
 	"encoding/json"
+	"fmt"
 	"helper"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-	"fmt"
 )
 
 var (
@@ -55,7 +55,7 @@ type Configuration struct {
 
 /*
  StatusBody struct is a direct map to the status reply from the mothership
- */
+*/
 type StatusBody struct {
 	Status string `json:"status"`
 }
@@ -65,12 +65,12 @@ type StatusBody struct {
  of the collector package.
 */
 type Snapshot struct {
-	CPU     *collector.CPU     `json:"cpu"`
-	Disks   *collector.Disks   `json:"disks"`
-	Memory  *collector.Memory  `json:"memory"`
-	Network *collector.Network `json:"network"`
-	System  *collector.System  `json:"system"`
-	Time    time.Time          `json:"system_time"`
+	CPU     <-chan *collector.CPU     `json:"cpu"`
+	Disks   <-chan *collector.Disks   `json:"disks"`
+	Memory  <-chan *collector.Memory  `json:"memory"`
+	Network <-chan *collector.Network `json:"network"`
+	System  <-chan *collector.System  `json:"system"`
+	Time    time.Time                 `json:"system_time"`
 }
 
 /*
