@@ -28,8 +28,8 @@ var (
 	collector_uri  = "/collector"
 	status_uri     = "/status"
 
-	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 2      // When to report all snapshots in cache
+	collect_frequency_in_seconds = 2       // When to collect a snapshot and store in cache
+	report_frequency_in_seconds  = 60      // When to report all snapshots in cache
 	version                      = "1.0.0" // The version of SSE this is
 
 	hostname  = ""
@@ -39,6 +39,14 @@ var (
 	configuration_file = "/etc/sse/sse.conf"
 	configuration      = new(Configuration)
 	server             = new(Server)
+
+	CPU     collector.CPU     = collector.CPU{}
+	Disks   collector.Disks   = collector.Disks{}
+	Memory  collector.Memory  = collector.Memory{}
+	Network collector.Network = collector.Network{}
+	System  collector.System  = collector.System{}
+
+	httpClient = &http.Client{}
 )
 
 /*
@@ -154,13 +162,14 @@ func Run() {
 	ticker := time.NewTicker(time.Duration(collect_frequency_in_seconds) * time.Second)
 
 	var counter int = 0
+	var snapshot Snapshot = Snapshot{}
 	var cache Cache = Cache{
-		AccountId:        configuration.Identification.AccountID,
-		OrganizationID:   configuration.Identification.OrganizationID,
-		OrganizationName: configuration.Identification.OrganizationName,
-		MachineNickname:  configuration.Identification.MachineNickname,
-		Version:          version,
-		Server:           server}
+	AccountId:        configuration.Identification.AccountID,
+	OrganizationID:   configuration.Identification.OrganizationID,
+	OrganizationName: configuration.Identification.OrganizationName,
+	MachineNickname:  configuration.Identification.MachineNickname,
+	Version:          version,
+	Server:           server}
 
 	for {
 		<-ticker.C
@@ -170,7 +179,7 @@ func Run() {
 
 			counter = 0
 		} else {
-			var snapshot Snapshot = Snapshot{}
+			snapshot = Snapshot{}
 			cache.Node = append(cache.Node, snapshot.Collector()) // fill in the Snapshot struct and add to the cache
 			counter++
 
@@ -183,9 +192,8 @@ func Run() {
 updateTicker updates the ticker in order to know when to run the codeblock next
 */
 func updateTicker() *time.Ticker {
-	var updatedSeconds int = time.Now().Second() + collect_frequency_in_seconds
 	nextTick := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(),
-		time.Now().Minute(), updatedSeconds, time.Now().Nanosecond(), time.Local)
+		time.Now().Minute(), time.Now().Second() + collect_frequency_in_seconds, time.Now().Nanosecond(), time.Local)
 	return time.NewTicker(nextTick.Sub(time.Now()))
 }
 
@@ -361,19 +369,19 @@ Snapshot struct.
 func (Snapshot *Snapshot) Collector() *Snapshot {
 	Snapshot.Time = time.Now().Local()
 
-	var CPU collector.CPU = collector.CPU{}
+	//var CPU collector.CPU = collector.CPU{}
 	Snapshot.CPU = <- CPU.Collect()
 
-	var Disks collector.Disks = collector.Disks{}
+	//var Disks collector.Disks = collector.Disks{}
 	Snapshot.Disks = <- Disks.Collect()
 
-	var Memory collector.Memory = collector.Memory{}
+	//var Memory collector.Memory = collector.Memory{}
 	Snapshot.Memory = <- Memory.Collect()
 
-	var Network collector.Network = collector.Network{}
+	//var Network collector.Network = collector.Network{}
 	Snapshot.Network = <- Network.Collect()
 
-	var System collector.System = collector.System{}
+	//var System collector.System = collector.System{}
 	Snapshot.System = <- System.Collect()
 
 	return Snapshot
@@ -391,8 +399,8 @@ func (Cache *Cache) Sender() bool {
 	req.Header.Set("X-Custom-Header", "SND")
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	//client := &http.Client{}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		log.Println(helper.Trace("Unable to complete request", "ERROR"))
 		return false

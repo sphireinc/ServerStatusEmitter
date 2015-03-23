@@ -4,6 +4,8 @@ import (
 	psutil_cpu "github.com/shirou/gopsutil/cpu"
 )
 
+// 4:41p
+
 type CPU struct {
 	CPUTimesStat    CPUTimesStat `json:"cpu_time_stat"`
 	CPUInfoStat     CPUInfoStat  `json:"cpu_info_stat"`
@@ -47,11 +49,9 @@ func (CPUPtr *CPU) Collect() <-chan *CPU {
 	go func() {
 		//cpu_time, _ := psutil_cpu.CPUTimes(true)
 		//cpu_info, _ := psutil_cpu.CPUInfo()
-		cpu_count_logical, _ := psutil_cpu.CPUCounts(true)
-		cpu_count, _ := psutil_cpu.CPUCounts(false)
 
-		CPUPtr.CPUCountLogical = cpu_count_logical
-		CPUPtr.CPUCount = cpu_count
+		CPUPtr.CPUCountLogical, _ = psutil_cpu.CPUCounts(true)
+		CPUPtr.CPUCount, _ = psutil_cpu.CPUCounts(false)
 
 		/*CPU.CPUTimesStat = CPUTimesStat{
 			CPU: cpu_time.CPU,
