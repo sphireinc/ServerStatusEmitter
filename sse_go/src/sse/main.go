@@ -8,18 +8,18 @@ reporter with the mothership.
 package sse
 
 import (
-	"io/ioutil"
 	"bytes"
 	"collector"
 	"encoding/json"
 	"helper"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
-	"runtime"
-	"time"
 	"strings"
+	"time"
+	"fmt"
 )
 
 var (
@@ -28,9 +28,9 @@ var (
 	collector_uri  = "/collector"
 	status_uri     = "/status"
 
-	collect_frequency_in_seconds = 1        // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 15       // When to report all snapshots in cache
-	version                      = "1.0.0"  // The version of SSE this is
+	collect_frequency_in_seconds = 2       // When to collect a snapshot and store in cache
+	report_frequency_in_seconds  = 16      // When to report all snapshots in cache
+	version                      = "1.0.0" // The version of SSE this is
 
 	hostname  = ""
 	ipAddress = ""
@@ -38,7 +38,7 @@ var (
 	log_file           = "/var/log/sphire-sse.log"
 	configuration_file = "/etc/sse/sse.conf"
 	configuration      = new(Configuration)
-	server			   = new(Server)
+	server             = new(Server)
 )
 
 /*
@@ -51,6 +51,13 @@ type Configuration struct {
 		OrganizationName string `json:"organization_name"`
 		MachineNickname  string `json:"machine_nickname"`
 	} `json:"identification"`
+}
+
+/*
+ StatusBody struct is a direct map to the status reply from the mothership
+ */
+type StatusBody struct {
+	Status string `json:"status"`
 }
 
 /*
@@ -68,12 +75,12 @@ type Snapshot struct {
 
 /*
  Server struct implements identifying data about the server.
- */
+*/
 type Server struct {
-	IpAddress string `json:"ip_address"`
-	Hostname string `json:"hostname"`
+	IpAddress       string `json:"ip_address"`
+	Hostname        string `json:"hostname"`
 	OperatingSystem struct {
-	    // grepped from cat /etc/issue
+		// grepped from cat /etc/issue
 		Distributor string `json:"distributor_id`
 
 		// cat /proc/version_signature
@@ -85,11 +92,11 @@ type Server struct {
 	Hardware struct {
 		// grepped from lscpu
 		Architecture string `json:"architecture"`
-		CPUOpMode string `json:"cpu_op_mode"`
-		CPUCount string `json:"cpu_count"`
-		CPUFamily string `json:"cpu_family"`
-		CPUModel string `json:"cpu_model"`
-		CPUMhz string `json:"cpu_mhz"`
+		CPUOpMode    string `json:"cpu_op_mode"`
+		CPUCount     string `json:"cpu_count"`
+		CPUFamily    string `json:"cpu_family"`
+		CPUModel     string `json:"cpu_model"`
+		CPUMhz       string `json:"cpu_mhz"`
 	} `json:"hardware"`
 }
 
@@ -98,16 +105,13 @@ type Server struct {
  Also includes the program Version and AccountId - the latter of which is gleaned from the configuration.
 */
 type Cache struct {
-	Node      []*Snapshot `json:"node"`
-
-	Server	  *Server	`json:"server"`
-
-	AccountId string      `json:"account_id"`
-	Version   string      `json:"version"`
-
-	OrganizationID   string `json:"organization_id"`
-	OrganizationName string `json:"organization_name"`
-	MachineNickname  string `json:"machine_nickname"`
+	Node             []*Snapshot `json:"node"`
+	Server           *Server     `json:"server"`
+	AccountId        string      `json:"account_id"`
+	Version          string      `json:"version"`
+	OrganizationID   string      `json:"organization_id"`
+	OrganizationName string      `json:"organization_name"`
+	MachineNickname  string      `json:"machine_nickname"`
 }
 
 /*
@@ -143,7 +147,7 @@ func Run() {
 	log.Println(helper.Trace("Performing registration.", "OK"))
 	body, err := Register()
 	if err != nil {
-		log.Println(helper.Trace("Unable to register this machine" + string(body), "ERROR"))
+		log.Println(helper.Trace("Unable to register this machine"+string(body), "ERROR"))
 		os.Exit(1)
 	}
 
@@ -156,19 +160,20 @@ func Run() {
 		OrganizationName: configuration.Identification.OrganizationName,
 		MachineNickname:  configuration.Identification.MachineNickname,
 		Version:          version,
-		Server: 		  server}
+		Server:           server}
 
 	for {
 		<-ticker.C
 		if counter > 0 && counter%report_frequency_in_seconds == 0 {
 			cache.Sender()
 			cache.Node = nil // Clear the Node Cache
-			runtime.GC()
+
 			counter = 0
 		} else {
 			var snapshot Snapshot = Snapshot{}
 			cache.Node = append(cache.Node, snapshot.Collector()) // fill in the Snapshot struct and add to the cache
 			counter++
+
 			ticker = updateTicker()
 		}
 	}
@@ -236,7 +241,7 @@ func Initialize() (bool, error) {
 
 	hardware_out, err_hwd := exec.Command("lscpu").Output()
 	hardware := []string{}
-	if err_hwd == nil{
+	if err_hwd == nil {
 		hardware = strings.Split(string(hardware_out), "\n")
 	}
 
@@ -264,32 +269,32 @@ func Initialize() (bool, error) {
 		}
 	}
 
-	server = &Server {
+	server = &Server{
 		IpAddress: ipAddress,
-		Hostname: hostname,
+		Hostname:  hostname,
 		OperatingSystem: struct {
-			Distributor string `json:"distributor_id`
+			Distributor      string `json:"distributor_id`
 			VersionSignature string `json:"version_signature"`
-			Version string `json:"version"`
+			Version          string `json:"version"`
 		}{
-			Distributor: string(distributor),
+			Distributor:      string(distributor),
 			VersionSignature: string(versionSignature),
-			Version: string(version),
+			Version:          string(version),
 		},
 		Hardware: struct {
 			Architecture string `json:"architecture"`
-			CPUOpMode string `json:"cpu_op_mode"`
-			CPUCount string `json:"cpu_count"`
-			CPUFamily string `json:"cpu_family"`
-			CPUModel string `json:"cpu_model"`
-			CPUMhz string `json:"cpu_mhz"`
+			CPUOpMode    string `json:"cpu_op_mode"`
+			CPUCount     string `json:"cpu_count"`
+			CPUFamily    string `json:"cpu_family"`
+			CPUModel     string `json:"cpu_model"`
+			CPUMhz       string `json:"cpu_mhz"`
 		}{
 			Architecture: architecture,
-			CPUOpMode: cpuOpMode,
-			CPUCount: cpuCount,
-			CPUFamily: cpuFamily,
-			CPUModel: cpuModel,
-			CPUMhz: cpuMhz,
+			CPUOpMode:    cpuOpMode,
+			CPUCount:     cpuCount,
+			CPUFamily:    cpuFamily,
+			CPUModel:     cpuModel,
+			CPUMhz:       cpuMhz,
 		},
 	}
 
@@ -306,6 +311,7 @@ func Initialize() (bool, error) {
 Register performs a registration of this instance with the mothership
 */
 func Register() (string, error) {
+	log.Println(helper.Trace("Starting registration.", "OK"))
 	var jsonStr = []byte(`{}`)
 
 	// local struct
@@ -323,7 +329,7 @@ func Register() (string, error) {
 	}
 
 	jsonStr, _ = json.Marshal(registrationObject)
-	req, err := http.NewRequest("POST", mothership_url+register_uri, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", mothership_url+register_uri+"/"+version, bytes.NewBuffer(jsonStr))
 	req.Header.Set("X-Custom-Header", "REG")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -335,6 +341,14 @@ func Register() (string, error) {
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
+
+	var status StatusBody
+	_ = json.Unmarshal(body, &status)
+
+	if status.Status == "upgrade" {
+		fmt.Println("There is a new version available. Please consider upgrading.")
+		log.Println(helper.Trace("There is a new version available. Please consider upgrading.", "OK"))
+	}
 
 	log.Println(helper.Trace("Registration complete.", "OK"))
 	return string(body), nil
@@ -387,7 +401,7 @@ func (Cache *Cache) Sender() bool {
 
 	read_body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(helper.Trace("Unable to complete request" + string(read_body), "ERROR"))
+		log.Println(helper.Trace("Unable to complete request"+string(read_body), "ERROR"))
 		return false
 	}
 
@@ -396,14 +410,11 @@ func (Cache *Cache) Sender() bool {
 
 /*
  checkStatus checks the status of the mothership
- */
+*/
 func checkStatus() bool {
-	type StatusBody struct {
-		Status string `json:"status"`
-	}
 	var status_body StatusBody
 
-	resp, err := http.Get(mothership_url+status_uri)
+	resp, err := http.Get(mothership_url + status_uri)
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)

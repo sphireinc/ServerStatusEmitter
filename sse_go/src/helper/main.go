@@ -54,7 +54,7 @@ func GetServerExternalIPAddress() (string, error) {
 // Trace allows us to know which file and which function is executing at the moment.
 // It returns a string.
 func Trace(message string, status string) string {
-	var debug bool
+	var debug bool = false
 	var trace string
 	if debug {
 		pc := make([]uintptr, 10) // at least 1 entry needed

@@ -5,8 +5,8 @@ import (
 )
 
 type Memory struct {
-	VirtualMemoryStat VirtualMemoryStat  `json:"virtual_memory_stat"`
-	SwapMemoryStat    SwapMemoryStat `json:"swap_memory_stat"`
+	VirtualMemoryStat VirtualMemoryStat `json:"virtual_memory_stat"`
+	SwapMemoryStat    SwapMemoryStat    `json:"swap_memory_stat"`
 }
 
 type VirtualMemoryStat struct {
@@ -37,26 +37,26 @@ func (Memory *Memory) Collect() *Memory {
 	swap, _ := psutil_mem.SwapMemory()
 
 	Memory.VirtualMemoryStat = VirtualMemoryStat{
-		Total: virtual.Total,
-		Available: virtual.Available,
-		Used: virtual.Used,
+		Total:       virtual.Total,
+		Available:   virtual.Available,
+		Used:        virtual.Used,
 		UsedPercent: virtual.UsedPercent,
-		Free: virtual.Free,
-		Active: virtual.Active,
-		Inactive: virtual.Inactive,
-		Buffers: virtual.Buffers,
-		Cached: virtual.Cached,
-		Wired: virtual.Wired,
-		Shared: virtual.Shared,
+		Free:        virtual.Free,
+		Active:      virtual.Active,
+		Inactive:    virtual.Inactive,
+		Buffers:     virtual.Buffers,
+		Cached:      virtual.Cached,
+		Wired:       virtual.Wired,
+		Shared:      virtual.Shared,
 	}
 
 	Memory.SwapMemoryStat = SwapMemoryStat{
-		Total: swap.Total,
-		Used: swap.Used,
-		Free: swap.Free,
+		Total:       swap.Total,
+		Used:        swap.Used,
+		Free:        swap.Free,
 		UsedPercent: swap.UsedPercent,
-		Sin: swap.Sin,
-		Sout: swap.Sout,
+		Sin:         swap.Sin,
+		Sout:        swap.Sout,
 	}
 
 	return Memory

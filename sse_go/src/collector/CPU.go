@@ -5,10 +5,10 @@ import (
 )
 
 type CPU struct {
-	CPUTimesStat CPUTimesStat `json:"cpu_time_stat"`
-	CPUInfoStat CPUInfoStat `json:"cpu_info_stat"`
-	CPUCount int `json:"cpu_count"`
-	CPUCountLogical int `json:"cpu_count_logical"`
+	CPUTimesStat    CPUTimesStat `json:"cpu_time_stat"`
+	CPUInfoStat     CPUInfoStat  `json:"cpu_info_stat"`
+	CPUCount        int          `json:"cpu_count"`
+	CPUCountLogical int          `json:"cpu_count_logical"`
 }
 
 type CPUTimesStat struct {
@@ -79,7 +79,6 @@ func (CPU *CPU) Collect() *CPU {
 		CacheSize: cpu_info.CacheSize,
 		Flags: cpu_info.Flags,
 	}*/
-
 
 	return CPU
 }

@@ -1,8 +1,8 @@
 package collector
 
 type Disks struct {
-	DiskUsageStat      DiskUsageStat `json:"disk_usage_stat"`
-	DiskPartitionStat  DiskPartitionStat `json:"disk_partition_stat"`
+	DiskUsageStat      DiskUsageStat      `json:"disk_usage_stat"`
+	DiskPartitionStat  DiskPartitionStat  `json:"disk_partition_stat"`
 	DiskIOCountersStat DiskIOCountersStat `json:"disk_io_counters_stat"`
 }
 
