@@ -1,11 +1,14 @@
 package main
 
 import (
-	"sse"
+	//"sse"
+	"helper"
 )
 
 func main() {
-	sse.Run()
+	//sse.Run()
+
+	helper.GetServerExternalIPAddress()
 
 	return
 }
