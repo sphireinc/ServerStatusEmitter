@@ -29,7 +29,7 @@ var (
 	status_uri     = "/status"
 
 	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 5       // When to report all snapshots in cache
+	report_frequency_in_seconds  = 60       // When to report all snapshots in cache
 	version                      = "1.0.0" // The version of SSE this is
 
 	hostname  = ""
@@ -123,14 +123,15 @@ type Cache struct {
 }
 
 /*
-Run Program entry point which initializes, registers and runs the main scheduler of the
-program. Also handles initialization of the global logger.
+ Run Program entry point which initializes, registers and runs the main scheduler of the
+ program. Also handles initialization of the global logger.
 */
 func Run() {
 	// Define the global logger
 	logger, err := os.OpenFile(log_file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Println(helper.Trace("Unable to secure log: "+log_file, "ERROR"))
+		fmt.Println("Unable to secure log: "+log_file, "ERROR")
 		os.Exit(1)
 	}
 	defer logger.Close()
@@ -141,6 +142,7 @@ func Run() {
 	status := checkStatus()
 	if status == false {
 		log.Println(helper.Trace("Mothership unreachable. Check your internet connection.", "ERROR"))
+		fmt.Println("Mothership unreachable. Check your internet connection.", "ERROR")
 		os.Exit(1)
 	}
 
@@ -148,6 +150,7 @@ func Run() {
 	_, err = Initialize()
 	if err != nil {
 		log.Println(helper.Trace("Exiting.", "ERROR"))
+		fmt.Println("Exiting.", "ERROR")
 		os.Exit(1)
 	}
 
@@ -156,6 +159,7 @@ func Run() {
 	body, err := Register()
 	if err != nil {
 		log.Println(helper.Trace("Unable to register this machine"+string(body), "ERROR"))
+		fmt.Println("Unable to register this machine"+string(body), "ERROR")
 		os.Exit(1)
 	}
 
@@ -187,8 +191,8 @@ func Run() {
 }
 
 /*
-Initialize attempts to gather all the data for correct program initialization. Loads config, etc.
-returns bool and error - if ever false, error will be set, otherwise if bool is true, error is nil.
+ Initialize attempts to gather all the data for correct program initialization. Loads config, etc.
+ returns bool and error - if ever false, error will be set, otherwise if bool is true, error is nil.
 */
 func Initialize() (bool, error) {
 	var err error = nil
@@ -204,6 +208,7 @@ func Initialize() (bool, error) {
 	ipAddress, err = helper.GetServerExternalIPAddress()
 	if err != nil {
 		log.Println(helper.Trace("Initialization failed, IP Address unattainable.", "ERROR"))
+		fmt.Println("Initialization failed, IP Address unattainable.", "ERROR")
 		return false, err
 	}
 
@@ -297,6 +302,7 @@ func Initialize() (bool, error) {
 
 	if err != nil {
 		log.Println(helper.Trace("Initialization failed - could not load configuration.", "ERROR"))
+		fmt.Println("Initialization failed - could not load configuration.", "ERROR")
 		return false, err
 	}
 
@@ -305,7 +311,7 @@ func Initialize() (bool, error) {
 }
 
 /*
-Register performs a registration of this instance with the mothership
+ Register performs a registration of this instance with the mothership
 */
 func Register() (string, error) {
 	log.Println(helper.Trace("Starting registration.", "OK"))
@@ -343,8 +349,8 @@ func Register() (string, error) {
 	_ = json.Unmarshal(body, &status)
 
 	if status.Status == "upgrade" {
-		fmt.Println("There is a new version available. Please consider upgrading.")
 		log.Println(helper.Trace("There is a new version available. Please consider upgrading.", "OK"))
+		fmt.Println("There is a new version available. Please consider upgrading.")
 	}
 
 	log.Println(helper.Trace("Registration complete.", "OK"))
@@ -352,8 +358,8 @@ func Register() (string, error) {
 }
 
 /*
-Collector collects a snapshot of the system at the time of calling and stores it in
-Snapshot struct.
+ Collector collects a snapshot of the system at the time of calling and stores it in
+ Snapshot struct.
 */
 func (Snapshot *Snapshot) Collector() *Snapshot {
 	Snapshot.Time = time.Now().Local()
@@ -367,8 +373,8 @@ func (Snapshot *Snapshot) Collector() *Snapshot {
 }
 
 /*
-Sender sends the data in Cache to the mothership, then clears the Cache struct so that it can
-accept new data.
+ Sender sends the data in Cache to the mothership, then clears the Cache struct so that it can
+ accept new data.
 */
 func (Cache *Cache) Sender() bool {
 	var jsonStr = []byte(`{}`)
@@ -389,6 +395,7 @@ func (Cache *Cache) Sender() bool {
 
 	if err != nil {
 		log.Println(helper.Trace("Unable to complete request"+string(read_body), "ERROR"))
+		fmt.Println("Unable to complete request"+string(read_body), "ERROR")
 		return false
 	}
 
@@ -410,6 +417,7 @@ func checkStatus() bool {
 		return true
 	} else {
 		log.Println(helper.Trace("Unable to complete status request", "ERROR"))
+		fmt.Println("Unable to complete status request", "ERROR")
 		return false
 	}
 }
