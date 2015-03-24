@@ -47,13 +47,7 @@ type NetInterfaceStat struct {
 	Addrs        []NetInterfaceAddr `json:"addrs"`
 }
 
-func (NetworkPtr *Network) Collect() <-chan *Network {
-	out := make(chan *Network)
+func (NetworkPtr *Network) Collect() *Network {
 
-	go func() {
-
-		close(out)
-	}()
-
-	return out
+	return NetworkPtr
 }

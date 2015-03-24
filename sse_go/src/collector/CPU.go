@@ -43,49 +43,42 @@ type CPUInfoStat struct {
 	Flags      []string `json:"flags"`
 }
 
-func (CPUPtr *CPU) Collect() <-chan *CPU {
-	out := make(chan *CPU)
+func (CPUPtr *CPU) Collect() *CPU {
+	//cpu_time, _ := psutil_cpu.CPUTimes(true)
+	//cpu_info, _ := psutil_cpu.CPUInfo()
 
-	go func() {
-		//cpu_time, _ := psutil_cpu.CPUTimes(true)
-		//cpu_info, _ := psutil_cpu.CPUInfo()
+	CPUPtr.CPUCountLogical, _ = psutil_cpu.CPUCounts(true)
+	CPUPtr.CPUCount, _ = psutil_cpu.CPUCounts(false)
 
-		CPUPtr.CPUCountLogical, _ = psutil_cpu.CPUCounts(true)
-		CPUPtr.CPUCount, _ = psutil_cpu.CPUCounts(false)
+	/*CPU.CPUTimesStat = CPUTimesStat{
+		CPU: cpu_time.CPU,
+		User: cpu_time.User,
+		System: cpu_time.System,
+		Idle: cpu_time.Idle,
+		Nice: cpu_time.Nice,
+		Iowait: cpu_time.Iowait,
+		Irq: cpu_time.Irq,
+		Softirq: cpu_time.Softirq,
+		Steal: cpu_time.Steal,
+		Guest: cpu_time.Guest,
+		GuestNice: cpu_time.GuestNice,
+		Stolen: cpu_time.Stolen,
+	}
 
-		/*CPU.CPUTimesStat = CPUTimesStat{
-			CPU: cpu_time.CPU,
-			User: cpu_time.User,
-			System: cpu_time.System,
-			Idle: cpu_time.Idle,
-			Nice: cpu_time.Nice,
-			Iowait: cpu_time.Iowait,
-			Irq: cpu_time.Irq,
-			Softirq: cpu_time.Softirq,
-			Steal: cpu_time.Steal,
-			Guest: cpu_time.Guest,
-			GuestNice: cpu_time.GuestNice,
-			Stolen: cpu_time.Stolen,
-		}
+	CPU.CPUInfoStat = CPUInfoStat{
+		CPU: cpu_info.CPU,
+		VendorID: cpu_info.VendorID,
+		Family: cpu_info.Family,
+		Model: cpu_info.Model,
+		Stepping: cpu_info.Stepping,
+		PhysicalID: cpu_info.PhysicalID,
+		CoreID: cpu_info.CoreID,
+		Cores: cpu_info.Cores,
+		ModelName: cpu_info.ModelName,
+		Mhz: cpu_info.Mhz,
+		CacheSize: cpu_info.CacheSize,
+		Flags: cpu_info.Flags,
+	}*/
 
-		CPU.CPUInfoStat = CPUInfoStat{
-			CPU: cpu_info.CPU,
-			VendorID: cpu_info.VendorID,
-			Family: cpu_info.Family,
-			Model: cpu_info.Model,
-			Stepping: cpu_info.Stepping,
-			PhysicalID: cpu_info.PhysicalID,
-			CoreID: cpu_info.CoreID,
-			Cores: cpu_info.Cores,
-			ModelName: cpu_info.ModelName,
-			Mhz: cpu_info.Mhz,
-			CacheSize: cpu_info.CacheSize,
-			Flags: cpu_info.Flags,
-		}*/
-
-		out <- CPUPtr
-		close(out)
-	}()
-
-	return out
+	return CPUPtr
 }

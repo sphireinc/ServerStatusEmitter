@@ -37,13 +37,7 @@ type DiskIOCountersStat struct {
 	SerialNumber string `json:"serial_number"`
 }
 
-func (DisksPtr *Disks) Collect() <-chan *Disks {
-	out := make(chan *Disks)
+func (DisksPtr *Disks) Collect() *Disks {
 
-	go func() {
-
-		close(out)
-	}()
-
-	return out
+	return DisksPtr
 }

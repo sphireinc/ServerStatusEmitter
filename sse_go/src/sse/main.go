@@ -28,8 +28,8 @@ var (
 	collector_uri  = "/collector"
 	status_uri     = "/status"
 
-	collect_frequency_in_seconds = 2       // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 60      // When to report all snapshots in cache
+	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
+	report_frequency_in_seconds  = 5       // When to report all snapshots in cache
 	version                      = "1.0.0" // The version of SSE this is
 
 	hostname  = ""
@@ -89,7 +89,7 @@ type Server struct {
 	Hostname        string `json:"hostname"`
 	OperatingSystem struct {
 		// grepped from cat /etc/issue
-		Distributor string `json:"distributor_id`
+		Distributor string `json:"distributor_id"`
 
 		// cat /proc/version_signature
 		VersionSignature string `json:"version_signature"`
@@ -159,42 +159,31 @@ func Run() {
 		os.Exit(1)
 	}
 
-	ticker := time.NewTicker(time.Duration(collect_frequency_in_seconds) * time.Second)
-
 	var counter int = 0
 	var snapshot Snapshot = Snapshot{}
 	var cache Cache = Cache{
-	AccountId:        configuration.Identification.AccountID,
-	OrganizationID:   configuration.Identification.OrganizationID,
-	OrganizationName: configuration.Identification.OrganizationName,
-	MachineNickname:  configuration.Identification.MachineNickname,
-	Version:          version,
-	Server:           server}
+		AccountId:        configuration.Identification.AccountID,
+		OrganizationID:   configuration.Identification.OrganizationID,
+		OrganizationName: configuration.Identification.OrganizationName,
+		MachineNickname:  configuration.Identification.MachineNickname,
+		Version:          version,
+		Server:           server}
+
+	ticker := time.NewTicker(time.Duration(collect_frequency_in_seconds) * time.Second)
 
 	for {
-		<-ticker.C
+		<-ticker.C // send the updated time back via the channel
+
+		// fill in the Snapshot struct and add to the cache
+		cache.Node = append(cache.Node, snapshot.Collector())
+		counter++
+
 		if counter > 0 && counter%report_frequency_in_seconds == 0 {
-			cache.Sender()
+			go cache.Sender()
 			cache.Node = nil // Clear the Node Cache
-
 			counter = 0
-		} else {
-			snapshot = Snapshot{}
-			cache.Node = append(cache.Node, snapshot.Collector()) // fill in the Snapshot struct and add to the cache
-			counter++
-
-			ticker = updateTicker()
 		}
 	}
-}
-
-/*
-updateTicker updates the ticker in order to know when to run the codeblock next
-*/
-func updateTicker() *time.Ticker {
-	nextTick := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(),
-		time.Now().Minute(), time.Now().Second() + collect_frequency_in_seconds, time.Now().Nanosecond(), time.Local)
-	return time.NewTicker(nextTick.Sub(time.Now()))
 }
 
 /*
@@ -281,7 +270,7 @@ func Initialize() (bool, error) {
 		IpAddress: ipAddress,
 		Hostname:  hostname,
 		OperatingSystem: struct {
-			Distributor      string `json:"distributor_id`
+			Distributor      string `json:"distributor_id"`
 			VersionSignature string `json:"version_signature"`
 			Version          string `json:"version"`
 		}{
@@ -368,21 +357,11 @@ Snapshot struct.
 */
 func (Snapshot *Snapshot) Collector() *Snapshot {
 	Snapshot.Time = time.Now().Local()
-
-	//var CPU collector.CPU = collector.CPU{}
-	Snapshot.CPU = <- CPU.Collect()
-
-	//var Disks collector.Disks = collector.Disks{}
-	Snapshot.Disks = <- Disks.Collect()
-
-	//var Memory collector.Memory = collector.Memory{}
-	Snapshot.Memory = <- Memory.Collect()
-
-	//var Network collector.Network = collector.Network{}
-	Snapshot.Network = <- Network.Collect()
-
-	//var System collector.System = collector.System{}
-	Snapshot.System = <- System.Collect()
+	Snapshot.CPU = CPU.Collect()
+	Snapshot.Disks = Disks.Collect()
+	Snapshot.Memory = Memory.Collect()
+	Snapshot.Network = Network.Collect()
+	Snapshot.System = System.Collect()
 
 	return Snapshot
 }
@@ -399,7 +378,6 @@ func (Cache *Cache) Sender() bool {
 	req.Header.Set("X-Custom-Header", "SND")
 	req.Header.Set("Content-Type", "application/json")
 
-	//client := &http.Client{}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		log.Println(helper.Trace("Unable to complete request", "ERROR"))
@@ -408,6 +386,7 @@ func (Cache *Cache) Sender() bool {
 	defer resp.Body.Close()
 
 	read_body, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		log.Println(helper.Trace("Unable to complete request"+string(read_body), "ERROR"))
 		return false
