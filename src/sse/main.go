@@ -20,6 +20,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"regexp"
 )
 
 var (
@@ -29,7 +30,7 @@ var (
 	status_uri     = "/status"
 
 	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
-	report_frequency_in_seconds  = 60       // When to report all snapshots in cache
+	report_frequency_in_seconds  = 2       // When to report all snapshots in cache
 	version                      = "1.0.0" // The version of SSE this is
 
 	hostname  = ""
@@ -47,6 +48,7 @@ var (
 	System  collector.System  = collector.System{}
 
 	httpClient = &http.Client{}
+	cleanStrRgx, _ = regexp.Compile(`[\n]|(\\+n)|(\\+l)`)
 )
 
 /*
@@ -178,12 +180,15 @@ func Run() {
 	for {
 		<-ticker.C // send the updated time back via the channel
 
+		// reset the snapshot to an empty struct
+		snapshot = Snapshot{}
+
 		// fill in the Snapshot struct and add to the cache
 		cache.Node = append(cache.Node, snapshot.Collector())
 		counter++
 
 		if counter > 0 && counter%report_frequency_in_seconds == 0 {
-			go cache.Sender()
+			cache.Sender()
 			cache.Node = nil // Clear the Node Cache
 			counter = 0
 		}
@@ -279,9 +284,9 @@ func Initialize() (bool, error) {
 			VersionSignature string `json:"version_signature"`
 			Version          string `json:"version"`
 		}{
-			Distributor:      string(distributor),
-			VersionSignature: string(versionSignature),
-			Version:          string(version),
+			Distributor:      strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(distributor), "")),
+			VersionSignature: strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(versionSignature), "")),
+			Version:          strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(version), "")),
 		},
 		Hardware: struct {
 			Architecture string `json:"architecture"`
@@ -383,6 +388,8 @@ func (Cache *Cache) Sender() bool {
 	req, err := http.NewRequest("POST", mothership_url+collector_uri, bytes.NewBuffer(jsonStr))
 	req.Header.Set("X-Custom-Header", "SND")
 	req.Header.Set("Content-Type", "application/json")
+
+	fmt.Println(string(jsonStr))
 
 	resp, err := httpClient.Do(req)
 	if err != nil {

@@ -25,7 +25,7 @@ func GetServerExternalIPAddress() (string, error) {
 	cmdLineIp, _ := exec.Command("hostname", "-I").Output()
 
 	if ipAddressRegex.Match(cmdLineIp) {
-		return string(cmdLineIp), nil
+		return strings.Replace(strings.Replace(string(cmdLineIp),"\n","",-1)," ","",-1), nil
 	} else {
 		interfaces, err := net.Interfaces()
 		if err != nil {
