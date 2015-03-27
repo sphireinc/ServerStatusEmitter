@@ -1,21 +1,50 @@
 package helper
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net"
+	"net/http"
+	"os/exec"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
-	"os/exec"
-	"regexp"
 )
-
 
 var (
 	ipAddressRegex, _ = regexp.Compile(`\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`)
 )
 
+/*
+ Status struct is a direct map to the status reply from the mothership
+*/
+type Status struct {
+	Status string `json:"status"`
+}
+
 func main() {
+}
+
+/*
+ checkStatus checks the status of the mothership
+*/
+func (status_body Status) CheckStatus(uri string) bool {
+	resp, err := http.Get(uri)
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	json.Unmarshal(body, &status_body)
+	if err == nil && status_body.Status == "ok" {
+		return true
+	} else {
+		log.Println(Trace("Unable to complete status request", "ERROR"))
+		fmt.Println("Unable to complete status request", "ERROR")
+		return false
+	}
 }
 
 // GetServerExternalIPAddress gets the server external IP address (public
@@ -25,7 +54,7 @@ func GetServerExternalIPAddress() (string, error) {
 	cmdLineIp, _ := exec.Command("hostname", "-I").Output()
 
 	if ipAddressRegex.Match(cmdLineIp) {
-		return strings.Replace(strings.Replace(string(cmdLineIp),"\n","",-1)," ","",-1), nil
+		return strings.Replace(strings.Replace(string(cmdLineIp), "\n", "", -1), " ", "", -1), nil
 	} else {
 		interfaces, err := net.Interfaces()
 		if err != nil {
