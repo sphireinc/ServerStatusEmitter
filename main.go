@@ -19,10 +19,11 @@ var (
 
 	collect_frequency_in_seconds = 1       // When to collect a snapshot and store in cache
 	report_frequency_in_seconds  = 2       // When to report all snapshots in cache
-	version                      = "1.0.0" // The version of SSE this is
+	sse_version                  = "1.0.0" // The version of SSE this is
 
 	hostname  = ""
 	ipAddress = ""
+	version   = ""
 
 	log_file           = "/var/log/sphire-sse.log"
 	configuration_file = "/etc/sse/sse.conf"
@@ -97,7 +98,7 @@ func main() {
 		"log_file":          log_file,
 		"config_file":       configuration_file,
 	}
-	var registrationUrl string = mothership_url + register_uri + "/" + version
+	var registrationUrl string = mothership_url + register_uri + "/" + sse_version
 	body, err := sse.Register(registrationObject, registrationUrl)
 	if err != nil {
 		log.Println(helper.Trace("Unable to register this machine"+string(body), "ERROR"))
@@ -112,7 +113,7 @@ func main() {
 		OrganizationID:   configuration.Identification.OrganizationID,
 		OrganizationName: configuration.Identification.OrganizationName,
 		MachineNickname:  configuration.Identification.MachineNickname,
-		Version:          version,
+		Version:          sse_version,
 		Server:           server}
 	var collectorUrl string = mothership_url + collector_uri
 
