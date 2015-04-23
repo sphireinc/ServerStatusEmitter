@@ -12,20 +12,20 @@ import (
 )
 
 var (
-	URL = "http://mothership.serverstatusmonitoring.com"
-	URIRegister = "/register"
+	URL          = "http://mothership.serverstatusmonitoring.com"
+	URIRegister  = "/register"
 	URICollector = "/collector"
-	URIStatus = "/status"
+	URIStatus    = "/status"
 
-	Hostname = ""
+	Hostname  = ""
 	IPAddress = ""
 
-	LogFile = "/var/log/sphire-sse.log"
+	LogFile           = "/var/log/sphire-sse.log"
 	ConfigurationFile = "/etc/sse/sse.conf"
-	Configuration = new(Configuration)
+	Configuration     = new(Configuration)
 
 	CollectFrequencySeconds = 1 // Collect a snapshot and store in cache every X seconds
-	ReportFrequencySeconds = 2 // Report all snapshots in cache every Y seconds
+	ReportFrequencySeconds  = 2 // Report all snapshots in cache every Y seconds
 
 	CPU     collector.CPU     = collector.CPU{}
 	Disks   collector.Disks   = collector.Disks{}
@@ -48,7 +48,7 @@ type Configuration struct {
 	} `json:"identification"`
 }
 
-func main(){
+func main() {
 	// Define the global logger
 	logger, err := os.OpenFile(LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	HandleError(err)
@@ -85,9 +85,9 @@ func main(){
 		"ip_address":        IPAddress,
 		"log_file":          LogFile,
 		"config_file":       ConfigurationFile,
-	}, URL + URIRegister + "/" + Version)
+	}, URL+URIRegister+"/"+Version)
 	if err != nil {
-		HandleError(error("Unable to register this machine"+string(body)))
+		HandleError(error("Unable to register this machine" + string(body)))
 	}
 
 	// Set up our collector
@@ -124,7 +124,7 @@ func main(){
 
 }
 
-func HandleError(err error){
+func HandleError(err error) {
 	if err != nil {
 		log.Println(helper.Trace(err, "ERROR"))
 		fmt.Println(err, "ERROR")
