@@ -33,7 +33,7 @@ var (
 	Network collector.Network = collector.Network{}
 	System  collector.System  = collector.System{}
 
-	Version = "1.0.0"
+	Version = "1.0.1"
 )
 
 /*
