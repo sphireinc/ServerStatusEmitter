@@ -1,8 +1,8 @@
 package sse
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"helper"
 	"log"
 	"os"

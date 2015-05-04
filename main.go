@@ -1,9 +1,9 @@
 package main
 
 import (
-	"errors"
 	"collector"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"helper"
 	"log"
@@ -117,8 +117,12 @@ func main() {
 		cache.Node = append(cache.Node, snapshot.Collector())
 		counter++
 
+		out, _ := json.Marshal(snapshot.Collector().Network)
+		fmt.Println(string(out))
+
 		if counter > 0 && counter%ReportFrequencySeconds == 0 {
 			cache.Sender(URL + URICollector)
+
 			cache.Node = nil // Clear the Node Cache
 			counter = 0
 		}

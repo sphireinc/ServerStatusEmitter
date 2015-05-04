@@ -2,8 +2,8 @@ package sse
 
 import (
 	"bytes"
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"helper"
 	"io/ioutil"
