@@ -2,6 +2,7 @@ package sse
 
 import (
 	"fmt"
+	"errors"
 	"helper"
 	"log"
 	"os"
@@ -56,7 +57,7 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	// Attempt to get the server IP address
 	ipAddress, err := helper.GetServerExternalIPAddress()
 	if err != nil {
-		log.Println(helper.Trace("Initialization failed, IP Address unattainable.", "ERROR"))
+		log.Println(helper.Trace(errors.New("Initialization failed, IP Address unattainable."), "ERROR"))
 		fmt.Println("Initialization failed, IP Address unattainable.", "ERROR")
 		return server, "", "", "", err
 	}
@@ -146,11 +147,11 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	}
 
 	if err != nil {
-		log.Println(helper.Trace("Initialization failed - could not load configuration.", "ERROR"))
+		log.Println(helper.Trace(errors.New("Initialization failed - could not load configuration."), "ERROR"))
 		fmt.Println("Initialization failed - could not load configuration.", "ERROR")
 		return server, ipAddress, string(hostname), string(version), err
 	}
 
-	log.Println(helper.Trace("Initialization complete.", "OK"))
+	log.Println(helper.Trace(errors.New("Initialization complete."), "OK"))
 	return server, ipAddress, string(hostname), string(version), nil
 }

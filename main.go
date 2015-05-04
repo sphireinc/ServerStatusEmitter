@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"collector"
 	"encoding/json"
 	"fmt"
@@ -22,7 +23,7 @@ var (
 
 	LogFile           = "/var/log/sphire-sse.log"
 	ConfigurationFile = "/etc/sse/sse.conf"
-	Configuration     = new(Configuration)
+	Configuration     = new(Config)
 
 	CollectFrequencySeconds = 1 // Collect a snapshot and store in cache every X seconds
 	ReportFrequencySeconds  = 2 // Report all snapshots in cache every Y seconds
@@ -39,7 +40,7 @@ var (
 /*
  Configuration struct is a direct map to the configuration located in the configuration JSON file.
 */
-type Configuration struct {
+type Config struct {
 	Identification struct {
 		AccountID        string `json:"account_id"`
 		OrganizationID   string `json:"organization_id"`
@@ -58,20 +59,23 @@ func main() {
 	// Load and parse configuration file
 	file, err := os.Open(ConfigurationFile)
 	HandleError(err)
-	err := json.NewDecoder(file).Decode(Configuration)
+	err = json.NewDecoder(file).Decode(Configuration)
 	HandleError(err)
 
 	var status helper.Status = helper.Status{}
 	var status_result bool = status.CheckStatus(URL + URIStatus)
 	if status_result == false {
-		HandleError(error("Mothership unreachable. Check your internet connection."))
+		HandleError(errors.New("Mothership unreachable. Check your internet connection."))
 	}
 
 	// Perform system initialization
 	var server_obj sse.Server = sse.Server{}
-	var server *sse.Server = &sse.Server{}
-	server, ipAddress, hostname, version, err = server_obj.Initialize()
-	HandleError(err)
+	server, ipAddress, hostname, version, error := server_obj.Initialize()
+	HandleError(error)
+
+	IPAddress = ipAddress
+	Hostname = hostname
+	Version = version
 
 	// Perform registration
 	body, err := sse.Register(map[string]interface{}{
@@ -87,7 +91,7 @@ func main() {
 		"config_file":       ConfigurationFile,
 	}, URL+URIRegister+"/"+Version)
 	if err != nil {
-		HandleError(error("Unable to register this machine" + string(body)))
+		HandleError(errors.New("Unable to register this machine" + string(body)))
 	}
 
 	// Set up our collector

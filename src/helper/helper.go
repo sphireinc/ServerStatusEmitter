@@ -41,8 +41,8 @@ func (status_body Status) CheckStatus(uri string) bool {
 	if err == nil && status_body.Status == "ok" {
 		return true
 	} else {
-		log.Println(Trace("Unable to complete status request", "ERROR"))
-		fmt.Println("Unable to complete status request", "ERROR")
+		log.Println(Trace(errors.New("Unable to complete status request"), "ERROR"))
+		fmt.Println(errors.New("Unable to complete status request"), "ERROR")
 		return false
 	}
 }
@@ -95,7 +95,7 @@ func GetServerExternalIPAddress() (string, error) {
 
 // Trace allows us to know which file and which function is executing at the moment.
 // It returns a string.
-func Trace(message string, status string) string {
+func Trace(message error, status string) string {
 	var debug bool = false
 	var trace string
 	if debug {
@@ -103,9 +103,9 @@ func Trace(message string, status string) string {
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
 		file, line := f.FileLine(pc[0])
-		trace = string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): " + strings.ToUpper(status) + " " + message
+		trace = string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): " + strings.ToUpper(status) + " " + message.Error()
 	} else {
-		trace = strings.ToUpper(status) + " " + message
+		trace = strings.ToUpper(status) + " " + message.Error()
 	}
 	return trace
 }

@@ -2,6 +2,7 @@ package sse
 
 import (
 	"bytes"
+	"errors"
 	"encoding/json"
 	"fmt"
 	"helper"
@@ -42,7 +43,7 @@ func (Cache *Cache) Sender(collectorUrl string) bool {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Println(helper.Trace("Unable to complete request", "ERROR"))
+		log.Println(helper.Trace(errors.New("Unable to complete request"), "ERROR"))
 		return false
 	}
 	defer resp.Body.Close()
@@ -50,7 +51,7 @@ func (Cache *Cache) Sender(collectorUrl string) bool {
 	read_body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Println(helper.Trace("Unable to complete request"+string(read_body), "ERROR"))
+		log.Println(helper.Trace(errors.New("Unable to complete request "+string(read_body)), "ERROR"))
 		fmt.Println("Unable to complete request"+string(read_body), "ERROR")
 		return false
 	}

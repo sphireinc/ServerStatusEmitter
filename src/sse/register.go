@@ -2,6 +2,7 @@ package sse
 
 import (
 	"bytes"
+	"errors"
 	"encoding/json"
 	"fmt"
 	"helper"
@@ -14,7 +15,7 @@ import (
  Register performs a registration of this instance with the mothership
 */
 func Register(registrationObject map[string]interface{}, registrationUrl string) (string, error) {
-	log.Println(helper.Trace("Starting registration.", "OK"))
+	log.Println(helper.Trace(errors.New("Starting registration."), "OK"))
 	var jsonStr = []byte(`{}`)
 
 	jsonStr, _ = json.Marshal(registrationObject)
@@ -36,10 +37,10 @@ func Register(registrationObject map[string]interface{}, registrationUrl string)
 	_ = json.Unmarshal(body, &status)
 
 	if status.Status == "upgrade" {
-		log.Println(helper.Trace("There is a new version available. Please consider upgrading.", "OK"))
+		log.Println(helper.Trace(errors.New("There is a new version available. Please consider upgrading."), "OK"))
 		fmt.Println("There is a new version available. Please consider upgrading.")
 	}
 
-	log.Println(helper.Trace("Registration complete.", "OK"))
+	log.Println(helper.Trace(errors.New("Registration complete."), "OK"))
 	return string(body), nil
 }
