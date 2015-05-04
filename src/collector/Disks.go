@@ -10,10 +10,13 @@ type Disks struct {
 	DiskIOCounters interface{} `json:"disk_io_counters_stat"`
 }
 
-func (DisksPtr *Disks) Collect() *Disks {
+func (DisksPtr *Disks) Collect(disk_partition bool) *Disks {
 	DisksPtr.DiskUsage, _ = psutil_disk.DiskUsage("/")
-	DisksPtr.DiskPartition, _ = psutil_disk.DiskPartitions(true)
 	DisksPtr.DiskIOCounters, _ = psutil_disk.DiskIOCounters()
+
+	if disk_partition {
+		DisksPtr.DiskPartition, _ = psutil_disk.DiskPartitions(true)
+	}
 
 	return DisksPtr
 }

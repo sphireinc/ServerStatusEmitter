@@ -26,7 +26,7 @@ var (
 	Configuration     = new(Config)
 
 	CollectFrequencySeconds = 1 // Collect a snapshot and store in cache every X seconds
-	ReportFrequencySeconds  = 2 // Report all snapshots in cache every Y seconds
+	ReportFrequencySeconds  = 1 // Report all snapshots in cache every Y seconds
 
 	CPU     collector.CPU     = collector.CPU{}
 	Disks   collector.Disks   = collector.Disks{}
@@ -47,6 +47,16 @@ type Config struct {
 		OrganizationName string `json:"organization_name"`
 		MachineNickname  string `json:"machine_nickname"`
 	} `json:"identification"`
+	Settings struct {
+		Disk struct {
+			IncludePartitionData bool `json:"include_partition_data"`
+		} `json:"disk"`
+		Encrypt   bool `json:"encrypt"`
+		Reporting struct {
+			CollectFrequencySeconds int `json:"collect_frequency_seconds"`
+			ReportFrequencySeconds  int `json:"report_frequency_seconds"`
+		} `json:"reporting"`
+	} `json:"settings"`
 }
 
 func main() {
@@ -61,6 +71,10 @@ func main() {
 	HandleError(err)
 	err = json.NewDecoder(file).Decode(Configuration)
 	HandleError(err)
+
+	// Set any parameters that need to be set
+	CollectFrequencySeconds = Configuration.Settings.Reporting.CollectFrequencySeconds
+	ReportFrequencySeconds = Configuration.Settings.Reporting.ReportFrequencySeconds
 
 	var status helper.Status = helper.Status{}
 	var status_result bool = status.CheckStatus(URL + URIStatus)
@@ -108,21 +122,17 @@ func main() {
 	ticker := time.NewTicker(time.Duration(CollectFrequencySeconds) * time.Second)
 
 	for {
-		<-ticker.C // send the updated time back via the channel
+		<-ticker.C // send the updated time back via to the channel
 
 		// reset the snapshot to an empty struct
 		snapshot = sse.Snapshot{}
 
 		// fill in the Snapshot struct and add to the cache
-		cache.Node = append(cache.Node, snapshot.Collector())
+		cache.Node = append(cache.Node, snapshot.Collector(Configuration.Settings.Disk.IncludePartitionData))
 		counter++
-
-		out, _ := json.Marshal(snapshot.Collector().Network)
-		fmt.Println(string(out))
 
 		if counter > 0 && counter%ReportFrequencySeconds == 0 {
 			cache.Sender(URL + URICollector)
-
 			cache.Node = nil // Clear the Node Cache
 			counter = 0
 		}
