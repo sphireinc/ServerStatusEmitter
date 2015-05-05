@@ -51,7 +51,9 @@ type Config struct {
 		Disk struct {
 			IncludePartitionData bool `json:"include_partition_data"`
 		} `json:"disk"`
-		Encrypt   bool `json:"encrypt"`
+		System struct {
+			IncludeUsers bool `json:"include_users"`
+		} `json:"system"`
 		Reporting struct {
 			CollectFrequencySeconds int `json:"collect_frequency_seconds"`
 			ReportFrequencySeconds  int `json:"report_frequency_seconds"`
@@ -128,7 +130,8 @@ func main() {
 		snapshot = sse.Snapshot{}
 
 		// fill in the Snapshot struct and add to the cache
-		cache.Node = append(cache.Node, snapshot.Collector(Configuration.Settings.Disk.IncludePartitionData))
+		cache.Node = append(cache.Node, snapshot.Collector(Configuration.Settings.Disk.IncludePartitionData,
+			Configuration.Settings.System.IncludeUsers))
 		counter++
 
 		if counter > 0 && counter%ReportFrequencySeconds == 0 {

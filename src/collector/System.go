@@ -8,13 +8,16 @@ import (
 type System struct {
 	HostInfo interface{} `json:"host_info"`
 	LoadAvg  interface{} `json:"load_avg"`
-	Users    interface{} `json:"boot_time"`
+	Users    interface{} `json:"users"`
 }
 
-func (SystemPtr *System) Collect() *System {
+func (SystemPtr *System) Collect(users bool) *System {
 	SystemPtr.HostInfo, _ = psutil_host.HostInfo()
-	SystemPtr.Users, _ = psutil_host.Users()
 	SystemPtr.LoadAvg, _ = psutil_load.LoadAvg()
+
+	if users {
+		SystemPtr.Users, _ = psutil_host.Users()
+	}
 
 	return SystemPtr
 }

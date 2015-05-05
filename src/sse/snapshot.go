@@ -30,13 +30,13 @@ type Snapshot struct {
  Collector collects a snapshot of the system at the time of calling and stores it in
  Snapshot struct.
 */
-func (Snapshot *Snapshot) Collector(IncludePartitionData bool) *Snapshot {
+func (Snapshot *Snapshot) Collector(IncludePartitionData bool, IncludeUsers bool) *Snapshot {
 	Snapshot.Time = time.Now().Local()
 	Snapshot.CPU = CPU.Collect()
 	Snapshot.Disks = Disks.Collect(IncludePartitionData)
 	Snapshot.Memory = Memory.Collect()
 	Snapshot.Network = Network.Collect()
-	Snapshot.System = System.Collect()
+	Snapshot.System = System.Collect(IncludeUsers)
 
 	return Snapshot
 }

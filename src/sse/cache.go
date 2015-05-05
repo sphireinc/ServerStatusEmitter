@@ -37,6 +37,8 @@ func (Cache *Cache) Sender(collectorUrl string) bool {
 	var jsonStr = []byte(`{}`)
 	jsonStr, _ = json.Marshal(Cache)
 
+	fmt.Println(string(jsonStr))
+
 	req, err := http.NewRequest("POST", collectorUrl, bytes.NewBuffer(jsonStr))
 	req.Header.Set("X-Custom-Header", "SND")
 	req.Header.Set("Content-Type", "application/json")
