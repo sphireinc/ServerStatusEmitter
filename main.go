@@ -8,6 +8,7 @@ import (
 	"helper"
 	"log"
 	"os"
+	"os/signal"
 	"sse"
 	"time"
 )
@@ -122,24 +123,32 @@ func main() {
 		Server:           server}
 
 	ticker := time.NewTicker(time.Duration(CollectFrequencySeconds) * time.Second)
+	death := make(chan os.Signal, 1)
+	signal.Notify(death, os.Interrupt, os.Kill)
 
-	for {
-		<-ticker.C // send the updated time back via to the channel
+	go func() {
+		for {
+			select {
+			case <-ticker.C : // send the updated time back via to the channel
+				// reset the snapshot to an empty struct
+				snapshot = sse.Snapshot{}
 
-		// reset the snapshot to an empty struct
-		snapshot = sse.Snapshot{}
+				// fill in the Snapshot struct and add to the cache
+				cache.Node = append(cache.Node, snapshot.Collector(Configuration.Settings.Disk.IncludePartitionData,
+						Configuration.Settings.System.IncludeUsers))
+				counter++
 
-		// fill in the Snapshot struct and add to the cache
-		cache.Node = append(cache.Node, snapshot.Collector(Configuration.Settings.Disk.IncludePartitionData,
-			Configuration.Settings.System.IncludeUsers))
-		counter++
-
-		if counter > 0 && counter%ReportFrequencySeconds == 0 {
-			cache.Sender(URL + URICollector)
-			cache.Node = nil // Clear the Node Cache
-			counter = 0
+				if counter > 0 && counter%ReportFrequencySeconds == 0 {
+					cache.Sender(URL + URICollector)
+					cache.Node = nil // Clear the Node Cache
+					counter = 0
+				}
+			case <-death:
+				fmt.Println("died")
+				return
+			}
 		}
-	}
+	}()
 
 	return
 
