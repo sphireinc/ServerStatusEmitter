@@ -41,28 +41,31 @@ var (
 	// Configuration is the configuration instance (loads the above LogFile)
 	Configuration     = new(Config)
 
-	// Collect a snapshot and store in cache every X seconds
+	// CollectFrequencySeconds is value which tells us
+	// to collect a snapshot and store in cache
+	// every X seconds where X is a non negative integer
 	CollectFrequencySeconds = 1
 
-	// Report all snapshots in cache every Y seconds
+	// ReportFrequencySeconds tells us the frequency
+	// in seconds to report all snapshots in cache
 	ReportFrequencySeconds  = 1
 
-	// Instance of collector.CPU
+	// CPU is an instance of collector.CPU
 	CPU     collector.CPU     = collector.CPU{}
 
-	// Instance of collector.Disks
+	// Disks is an instance of collector.Disks
 	Disks   collector.Disks   = collector.Disks{}
 
-	// Instance of collector.Memory
+	// Memory is an instance of collector.Memory
 	Memory  collector.Memory  = collector.Memory{}
 
-	// Instance of collector.Network
+	// Network is an instance of collector.Network
 	Network collector.Network = collector.Network{}
 
-	// Instance of collector.System
+	// System is an instance of collector.System
 	System  collector.System  = collector.System{}
 
-	// The version of this program
+	// Version denotes the version of this program
 	Version = "1.0.1"
 )
 
