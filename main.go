@@ -14,27 +14,55 @@ import (
 )
 
 var (
+	// The url that hosts the service that this program will interact with
 	URL          = "http://mothership.serverstatusmonitoring.com"
+
+	// The uri to be used to register the system this program will run on
 	URIRegister  = "/register"
+
+	// The uri where collected data will be sent to
 	URICollector = "/collector"
+
+	// The uri to check the upstatus of URL
 	URIStatus    = "/status"
 
+	// The hostname of the system this program will run on
 	Hostname  = ""
+
+	// The IP address of the system this program will run on
 	IPAddress = ""
 
+	// The file where we want to log event data and errors
 	LogFile           = "/var/log/sphire-sse.log"
+
+	// The configuration file we want to use
 	ConfigurationFile = "/etc/sse/sse.conf"
+
+	// The configuration instance (loads the above LogFile)
 	Configuration     = new(Config)
 
-	CollectFrequencySeconds = 1 // Collect a snapshot and store in cache every X seconds
-	ReportFrequencySeconds  = 1 // Report all snapshots in cache every Y seconds
+	// Collect a snapshot and store in cache every X seconds
+	CollectFrequencySeconds = 1
 
+	// Report all snapshots in cache every Y seconds
+	ReportFrequencySeconds  = 1
+
+	// Instance of collector.CPU
 	CPU     collector.CPU     = collector.CPU{}
+
+	// Instance of collector.Disks
 	Disks   collector.Disks   = collector.Disks{}
+
+	// Instance of collector.Memory
 	Memory  collector.Memory  = collector.Memory{}
+
+	// Instance of collector.Network
 	Network collector.Network = collector.Network{}
+
+	// Instance of collector.System
 	System  collector.System  = collector.System{}
 
+	// The version of this program
 	Version = "1.0.1"
 )
 
