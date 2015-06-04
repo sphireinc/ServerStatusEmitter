@@ -69,9 +69,7 @@ var (
 	Version = "1.0.1"
 )
 
-/*
- Configuration struct is a direct map to the configuration located in the configuration JSON file.
-*/
+// Config is a direct map to the configuration located in the configuration JSON file.
 type Config struct {
 	Identification struct {
 		AccountID        string `json:"account_id"`
@@ -185,6 +183,9 @@ func main() {
 
 }
 
+// HandleError abstracts the error handling so that
+// we can both print the error, log the error and
+// exit without panic
 func HandleError(err error) {
 	if err != nil {
 		log.Println(helper.Trace(err, "ERROR"))
