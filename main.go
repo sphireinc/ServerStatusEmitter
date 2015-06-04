@@ -15,31 +15,31 @@ import (
 
 var (
 	// URL is the url that hosts the service that this program will interact with
-	URL          = "http://mothership.serverstatusmonitoring.com"
+	URL = "http://mothership.serverstatusmonitoring.com"
 
 	// URIRegister is the uri to be used to register the system this program will run on
-	URIRegister  = "/register"
+	URIRegister = "/register"
 
 	// URICollector is the uri where collected data will be sent to
 	URICollector = "/collector"
 
 	// URIStatus is the uri to check the upstatus of URL
-	URIStatus    = "/status"
+	URIStatus = "/status"
 
 	// Hostname is the hostname of the system this program will run on
-	Hostname  = ""
+	Hostname = ""
 
 	// IPAddress is the IP address of the system this program will run on
 	IPAddress = ""
 
 	// LogFile is the file where we want to log event data and errors
-	LogFile           = "/var/log/sphire-sse.log"
+	LogFile = "/var/log/sphire-sse.log"
 
 	// ConfigurationFile is the configuration file we want to use
 	ConfigurationFile = "/etc/sse/sse.conf"
 
 	// Configuration is the configuration instance (loads the above LogFile)
-	Configuration     = new(Config)
+	Configuration = new(Config)
 
 	// CollectFrequencySeconds is value which tells us
 	// to collect a snapshot and store in cache
@@ -48,22 +48,22 @@ var (
 
 	// ReportFrequencySeconds tells us the frequency
 	// in seconds to report all snapshots in cache
-	ReportFrequencySeconds  = 1
+	ReportFrequencySeconds = 1
 
 	// CPU is an instance of collector.CPU
-	CPU     collector.CPU     = collector.CPU{}
+	CPU = collector.CPU{}
 
 	// Disks is an instance of collector.Disks
-	Disks   collector.Disks   = collector.Disks{}
+	Disks = collector.Disks{}
 
 	// Memory is an instance of collector.Memory
-	Memory  collector.Memory  = collector.Memory{}
+	Memory = collector.Memory{}
 
 	// Network is an instance of collector.Network
-	Network collector.Network = collector.Network{}
+	Network = collector.Network{}
 
 	// System is an instance of collector.System
-	System  collector.System  = collector.System{}
+	System = collector.System{}
 
 	// Version denotes the version of this program
 	Version = "1.0.1"
@@ -108,15 +108,15 @@ func main() {
 	CollectFrequencySeconds = Configuration.Settings.Reporting.CollectFrequencySeconds
 	ReportFrequencySeconds = Configuration.Settings.Reporting.ReportFrequencySeconds
 
-	var status helper.Status = helper.Status{}
-	var status_result bool = status.CheckStatus(URL + URIStatus)
-	if status_result == false {
-		HandleError(errors.New("Mothership unreachable. Check your internet connection."))
+	var status = helper.Status{}
+	var statusResult = status.CheckStatus(URL + URIStatus)
+	if statusResult == false {
+		HandleError(errors.New("mothership unreachable - check your internet connection"))
 	}
 
 	// Perform system initialization
-	var server_obj sse.Server = sse.Server{}
-	server, ipAddress, hostname, version, error := server_obj.Initialize()
+	var serverObj = sse.Server{}
+	server, ipAddress, hostname, version, error := serverObj.Initialize()
 	HandleError(error)
 
 	IPAddress = ipAddress
@@ -141,9 +141,9 @@ func main() {
 	}
 
 	// Set up our collector
-	var counter int = 0
-	var snapshot sse.Snapshot = sse.Snapshot{}
-	var cache sse.Cache = sse.Cache{
+	var counter int
+	var snapshot = sse.Snapshot{}
+	var cache = sse.Cache{
 		AccountId:        Configuration.Identification.AccountID,
 		OrganizationID:   Configuration.Identification.OrganizationID,
 		OrganizationName: Configuration.Identification.OrganizationName,
@@ -158,13 +158,13 @@ func main() {
 	go func() {
 		for {
 			select {
-			case <-ticker.C : // send the updated time back via to the channel
+			case <-ticker.C: // send the updated time back via to the channel
 				// reset the snapshot to an empty struct
 				snapshot = sse.Snapshot{}
 
 				// fill in the Snapshot struct and add to the cache
 				cache.Node = append(cache.Node, snapshot.Collector(Configuration.Settings.Disk.IncludePartitionData,
-						Configuration.Settings.System.IncludeUsers))
+					Configuration.Settings.System.IncludeUsers))
 				counter++
 
 				if counter > 0 && counter%ReportFrequencySeconds == 0 {
