@@ -15,23 +15,14 @@ import (
 	"strings"
 )
 
-var (
-	ipAddressRegex, _ = regexp.Compile(`\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`)
-)
+var ipAddressRegex, _ = regexp.Compile(`\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`)
 
-/*
- Status struct is a direct map to the status reply from the mothership
-*/
+// Status struct is a direct map to the status reply from the mothership
 type Status struct {
 	Status string `json:"status"`
 }
 
-func main() {
-}
-
-/*
- checkStatus checks the status of the mothership
-*/
+// checkStatus checks the status of the mothership
 func (status_body Status) CheckStatus(uri string) bool {
 	resp, err := http.Get(uri)
 	defer resp.Body.Close()
@@ -51,23 +42,21 @@ func (status_body Status) CheckStatus(uri string) bool {
 // IP address) and returns it.
 // It returns an empty string and an error if it encounters an error.
 func GetServerExternalIPAddress() (string, error) {
-	cmdLineIp, _ := exec.Command("hostname", "-I").Output()
+	cmdLineIP, _ := exec.Command("hostname", "-I").Output()
 
-	if ipAddressRegex.Match(cmdLineIp) {
-		return strings.Replace(strings.Replace(string(cmdLineIp), "\n", "", -1), " ", "", -1), nil
-	} else {
+	if !ipAddressRegex.Match(cmdLineIP) {
 		interfaces, err := net.Interfaces()
 		if err != nil {
 			return "", err
 		}
-		for _, an_interface := range interfaces {
-			if an_interface.Flags&net.FlagUp == 0 {
+		for _, anInterface := range interfaces {
+			if anInterface.Flags&net.FlagUp == 0 {
 				continue // interface down
 			}
-			if an_interface.Flags&net.FlagLoopback != 0 {
+			if anInterface.Flags&net.FlagLoopback != 0 {
 				continue // loopback interface
 			}
-			addresses, err := an_interface.Addrs()
+			addresses, err := anInterface.Addrs()
 			if err != nil {
 				return "", err
 			}
@@ -91,21 +80,21 @@ func GetServerExternalIPAddress() (string, error) {
 		}
 		return "", errors.New("Connection to external network could not be detected.")
 	}
+
+	return strings.Replace(strings.Replace(string(cmdLineIP), "\n", "", -1), " ", "", -1), nil
 }
 
 // Trace allows us to know which file and which function is executing at the moment.
-// It returns a string.
 func Trace(message error, status string) string {
-	var debug bool = false
-	var trace string
+	var debug bool // manually set to true if debug is wanted
+
 	if debug {
 		pc := make([]uintptr, 10) // at least 1 entry needed
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
 		file, line := f.FileLine(pc[0])
-		trace = string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): " + strings.ToUpper(status) + " " + message.Error()
-	} else {
-		trace = strings.ToUpper(status) + " " + message.Error()
+		return string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): " + strings.ToUpper(status) + " " + message.Error()
 	}
-	return trace
+
+	return strings.ToUpper(status) + " " + message.Error()
 }
