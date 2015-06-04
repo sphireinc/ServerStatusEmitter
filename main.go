@@ -14,31 +14,31 @@ import (
 )
 
 var (
-	// The url that hosts the service that this program will interact with
+	// URL is the url that hosts the service that this program will interact with
 	URL          = "http://mothership.serverstatusmonitoring.com"
 
-	// The uri to be used to register the system this program will run on
+	// URIRegister is the uri to be used to register the system this program will run on
 	URIRegister  = "/register"
 
-	// The uri where collected data will be sent to
+	// URICollector is the uri where collected data will be sent to
 	URICollector = "/collector"
 
-	// The uri to check the upstatus of URL
+	// URIStatus is the uri to check the upstatus of URL
 	URIStatus    = "/status"
 
-	// The hostname of the system this program will run on
+	// Hostname is the hostname of the system this program will run on
 	Hostname  = ""
 
-	// The IP address of the system this program will run on
+	// IPAddress is the IP address of the system this program will run on
 	IPAddress = ""
 
-	// The file where we want to log event data and errors
+	// LogFile is the file where we want to log event data and errors
 	LogFile           = "/var/log/sphire-sse.log"
 
-	// The configuration file we want to use
+	// ConfigurationFile is the configuration file we want to use
 	ConfigurationFile = "/etc/sse/sse.conf"
 
-	// The configuration instance (loads the above LogFile)
+	// Configuration is the configuration instance (loads the above LogFile)
 	Configuration     = new(Config)
 
 	// Collect a snapshot and store in cache every X seconds
