@@ -22,7 +22,7 @@ type Status struct {
 	Status string `json:"status"`
 }
 
-// checkStatus checks the status of the mothership
+// CheckStatus checks the status of the mothership
 func (status_body Status) CheckStatus(uri string) bool {
 	resp, err := http.Get(uri)
 	defer resp.Body.Close()
@@ -31,11 +31,11 @@ func (status_body Status) CheckStatus(uri string) bool {
 	json.Unmarshal(body, &status_body)
 	if err == nil && status_body.Status == "ok" {
 		return true
-	} else {
-		log.Println(Trace(errors.New("Unable to complete status request"), "ERROR"))
-		fmt.Println(errors.New("Unable to complete status request"), "ERROR")
-		return false
 	}
+
+	log.Println(Trace(errors.New("unable to complete status request"), "ERROR"))
+	fmt.Println(errors.New("unable to complete status request"), "ERROR")
+	return false
 }
 
 // GetServerExternalIPAddress gets the server external IP address (public
@@ -78,7 +78,7 @@ func GetServerExternalIPAddress() (string, error) {
 				return ip.String(), nil
 			}
 		}
-		return "", errors.New("Connection to external network could not be detected.")
+		return "", errors.New("connection to external network could not be detected")
 	}
 
 	return strings.Replace(strings.Replace(string(cmdLineIP), "\n", "", -1), " ", "", -1), nil
