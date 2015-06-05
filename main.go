@@ -144,7 +144,7 @@ func main() {
 	var counter int
 	var snapshot = sse.Snapshot{}
 	var cache = sse.Cache{
-		AccountId:        Configuration.Identification.AccountID,
+		AccountID:        Configuration.Identification.AccountID,
 		OrganizationID:   Configuration.Identification.OrganizationID,
 		OrganizationName: Configuration.Identification.OrganizationName,
 		MachineNickname:  Configuration.Identification.MachineNickname,
