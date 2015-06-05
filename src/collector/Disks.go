@@ -4,7 +4,6 @@ import (
 	psutil_disk "github.com/shirou/gopsutil/disk"
 )
 
-
 // Disks is the struct that contains data about the Disks
 type Disks struct {
 	DiskUsage      interface{} `json:"disk_usage_stat"`

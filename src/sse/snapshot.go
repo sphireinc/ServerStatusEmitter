@@ -7,19 +7,19 @@ import (
 
 var (
 	// CPU collector
-	CPU        = collector.CPU{}
+	CPU = collector.CPU{}
 
 	// Disks collector
-	Disks      = collector.Disks{}
+	Disks = collector.Disks{}
 
 	// Memory collector
-	Memory    = collector.Memory{}
+	Memory = collector.Memory{}
 
 	// Network collector
-	Network  = collector.Network{}
+	Network = collector.Network{}
 
 	// System collector
-	System   = collector.System{}
+	System = collector.System{}
 )
 
 // Snapshot struct is a collection of other structs
