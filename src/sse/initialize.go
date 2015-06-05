@@ -15,11 +15,9 @@ var (
 	cleanStrRgx, _ = regexp.Compile(`[\n]|(\\+n)|(\\+l)`)
 )
 
-/*
- Server struct implements identifying data about the server.
-*/
+// Server struct implements identifying data about the server.
 type Server struct {
-	IpAddress       string `json:"ip_address"`
+	IPAddress       string `json:"ip_address"`
 	Hostname        string `json:"hostname"`
 	OperatingSystem struct {
 		// grepped from cat /etc/issue
@@ -42,10 +40,9 @@ type Server struct {
 	} `json:"hardware"`
 }
 
-/*
- Initialize attempts to gather all the data for correct program initialization. Loads config, etc.
- returns bool and error - if ever false, error will be set, otherwise if bool is true, error is nil.
-*/
+// Initialize attempts to gather all the data for correct program
+// initialization. Loads config, etc. Returns bool and error -
+// if ever false, error will be set, otherwise if bool is true, error is nil.
 func (server *Server) Initialize() (*Server, string, string, string, error) {
 	var architecture string
 	var cpuOpMode string
@@ -57,7 +54,7 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	// Attempt to get the server IP address
 	ipAddress, err := helper.GetServerExternalIPAddress()
 	if err != nil {
-		log.Println(helper.Trace(errors.New("Initialization failed, IP Address unattainable."), "ERROR"))
+		log.Println(helper.Trace(errors.New("initialization failed, IP Address unattainable."), "ERROR"))
 		fmt.Println("Initialization failed, IP Address unattainable.", "ERROR")
 		return server, "", "", "", err
 	}
@@ -65,40 +62,40 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	// Get the hostname
 	hostname, err := os.Hostname()
 	if err != nil {
-		hostname_byte, err := exec.Command("hostname").Output()
+		hostnameByte, err := exec.Command("hostname").Output()
 		if err == nil {
-			hostname = string(hostname_byte)
+			hostname = string(hostnameByte)
 		}
 	}
 
 	// Get data about the server and store it in the struct
-	distributor, err_distributor := exec.Command("cat", "/etc/issue").Output()
-	if err_distributor != nil {
+	distributor, errDistributor := exec.Command("cat", "/etc/issue").Output()
+	if errDistributor != nil {
 		distributor = []byte{}
 	}
 
-	versionSignature, err_versig := exec.Command("cat", "/proc/version_signature").Output()
-	if err_versig != nil {
+	versionSignature, errVersig := exec.Command("cat", "/proc/version_signature").Output()
+	if errVersig != nil {
 		versionSignature = []byte{}
 	}
 
-	version, err_ver := exec.Command("cat", "/proc/version").Output()
-	if err_ver != nil {
+	version, errVer := exec.Command("cat", "/proc/version").Output()
+	if errVer != nil {
 		version = []byte{}
 	}
 
-	hardware_out, err_hwd := exec.Command("lscpu").Output()
+	hardwareOut, errHwd := exec.Command("lscpu").Output()
 	hardware := []string{}
-	if err_hwd == nil {
-		hardware = strings.Split(string(hardware_out), "\n")
+	if errHwd == nil {
+		hardware = strings.Split(string(hardwareOut), "\n")
 	}
 
 	max := len(hardware) - 1
 	for index, line := range hardware {
-		split_line := strings.Split(line, ":")
+		splitLine := strings.Split(line, ":")
 		if index < max { // because index out of range if we dont have this
-			key := string(strings.TrimSpace(split_line[0]))
-			value := string(strings.TrimSpace(split_line[1]))
+			key := string(strings.TrimSpace(splitLine[0]))
+			value := string(strings.TrimSpace(splitLine[1]))
 
 			switch key {
 			case "Architecture":
@@ -118,7 +115,7 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	}
 
 	server = &Server{
-		IpAddress: ipAddress,
+		IPAddress: ipAddress,
 		Hostname:  hostname,
 		OperatingSystem: struct {
 			Distributor      string `json:"distributor_id"`
@@ -147,11 +144,11 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	}
 
 	if err != nil {
-		log.Println(helper.Trace(errors.New("Initialization failed - could not load configuration."), "ERROR"))
+		log.Println(helper.Trace(errors.New("initialization failed - could not load configuration."), "ERROR"))
 		fmt.Println("Initialization failed - could not load configuration.", "ERROR")
 		return server, ipAddress, string(hostname), string(version), err
 	}
 
-	log.Println(helper.Trace(errors.New("Initialization complete."), "OK"))
+	log.Println(helper.Trace(errors.New("initialization complete."), "OK"))
 	return server, ipAddress, string(hostname), string(version), nil
 }

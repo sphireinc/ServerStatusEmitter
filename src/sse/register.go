@@ -11,16 +11,14 @@ import (
 	"net/http"
 )
 
-/*
- Register performs a registration of this instance with the mothership
-*/
-func Register(registrationObject map[string]interface{}, registrationUrl string) (string, error) {
-	log.Println(helper.Trace(errors.New("Starting registration."), "OK"))
+// Register performs a registration of this instance with the mothership
+func Register(registrationObject map[string]interface{}, registrationURL string) (string, error) {
+	log.Println(helper.Trace(errors.New("starting registration."), "OK"))
 	var jsonStr = []byte(`{}`)
 
 	jsonStr, _ = json.Marshal(registrationObject)
-	fmt.Println(string(registrationUrl))
-	req, err := http.NewRequest("POST", registrationUrl, bytes.NewBuffer(jsonStr))
+	fmt.Println(string(registrationURL))
+	req, err := http.NewRequest("POST", registrationURL, bytes.NewBuffer(jsonStr))
 	req.Header.Set("X-Custom-Header", "REG")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -37,10 +35,10 @@ func Register(registrationObject map[string]interface{}, registrationUrl string)
 	_ = json.Unmarshal(body, &status)
 
 	if status.Status == "upgrade" {
-		log.Println(helper.Trace(errors.New("There is a new version available. Please consider upgrading."), "OK"))
+		log.Println(helper.Trace(errors.New("there is a new version available. Please consider upgrading."), "OK"))
 		fmt.Println("There is a new version available. Please consider upgrading.")
 	}
 
-	log.Println(helper.Trace(errors.New("Registration complete."), "OK"))
+	log.Println(helper.Trace(errors.New("registration complete."), "OK"))
 	return string(body), nil
 }

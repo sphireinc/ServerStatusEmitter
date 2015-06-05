@@ -6,17 +6,16 @@ import (
 )
 
 var (
-	CPU     collector.CPU     = collector.CPU{}
-	Disks   collector.Disks   = collector.Disks{}
-	Memory  collector.Memory  = collector.Memory{}
-	Network collector.Network = collector.Network{}
-	System  collector.System  = collector.System{}
+	CPU        = collector.CPU{}
+	Disks      = collector.Disks{}
+	Memory    = collector.Memory{}
+	Network  = collector.Network{}
+	System   = collector.System{}
 )
 
-/*
- Snapshot struct is a collection of other structs which are relayed from the different segments
- of the collector package.
-*/
+// Snapshot struct is a collection of other structs
+// which are relayed from the different segments of
+// the collector package.
 type Snapshot struct {
 	CPU     *collector.CPU     `json:"cpu"`
 	Disks   *collector.Disks   `json:"disks"`
@@ -26,10 +25,8 @@ type Snapshot struct {
 	Time    time.Time          `json:"system_time"`
 }
 
-/*
- Collector collects a snapshot of the system at the time of calling and stores it in
- Snapshot struct.
-*/
+// Collector collects a snapshot of the system at
+// the time of calling and stores it in Snapshot struct.
 func (Snapshot *Snapshot) Collector(IncludePartitionData bool, IncludeUsers bool) *Snapshot {
 	Snapshot.Time = time.Now().Local()
 	Snapshot.CPU = CPU.Collect()
