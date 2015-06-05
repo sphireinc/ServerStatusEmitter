@@ -54,7 +54,7 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	// Attempt to get the server IP address
 	ipAddress, err := helper.GetServerExternalIPAddress()
 	if err != nil {
-		log.Println(helper.Trace(errors.New("initialization failed, IP Address unattainable."), "ERROR"))
+		log.Println(helper.Trace(errors.New("initialization failed, IP Address unattainable"), "ERROR"))
 		fmt.Println("Initialization failed, IP Address unattainable.", "ERROR")
 		return server, "", "", "", err
 	}

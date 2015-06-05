@@ -13,7 +13,7 @@ import (
 
 // Register performs a registration of this instance with the mothership
 func Register(registrationObject map[string]interface{}, registrationURL string) (string, error) {
-	log.Println(helper.Trace(errors.New("starting registration."), "OK"))
+	log.Println(helper.Trace(errors.New("starting registration"), "OK"))
 	var jsonStr = []byte(`{}`)
 
 	jsonStr, _ = json.Marshal(registrationObject)
