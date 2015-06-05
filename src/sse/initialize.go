@@ -144,11 +144,11 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	}
 
 	if err != nil {
-		log.Println(helper.Trace(errors.New("initialization failed - could not load configuration."), "ERROR"))
-		fmt.Println("Initialization failed - could not load configuration.", "ERROR")
+		log.Println(helper.Trace(errors.New("initialization failed - could not load configuration"), "ERROR"))
+		fmt.Println("Initialization failed - could not load configuration", "ERROR")
 		return server, ipAddress, string(hostname), string(version), err
 	}
 
-	log.Println(helper.Trace(errors.New("initialization complete."), "OK"))
+	log.Println(helper.Trace(errors.New("initialization complete"), "OK"))
 	return server, ipAddress, string(hostname), string(version), nil
 }

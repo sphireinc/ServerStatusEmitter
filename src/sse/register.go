@@ -35,10 +35,10 @@ func Register(registrationObject map[string]interface{}, registrationURL string)
 	_ = json.Unmarshal(body, &status)
 
 	if status.Status == "upgrade" {
-		log.Println(helper.Trace(errors.New("there is a new version available. Please consider upgrading."), "OK"))
-		fmt.Println("There is a new version available. Please consider upgrading.")
+		log.Println(helper.Trace(errors.New("there is a new version available. Please consider upgrading"), "OK"))
+		fmt.Println("There is a new version available. Please consider upgrading")
 	}
 
-	log.Println(helper.Trace(errors.New("registration complete."), "OK"))
+	log.Println(helper.Trace(errors.New("registration complete"), "OK"))
 	return string(body), nil
 }

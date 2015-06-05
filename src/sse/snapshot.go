@@ -6,10 +6,19 @@ import (
 )
 
 var (
+	// CPU collector
 	CPU        = collector.CPU{}
+
+	// Disks collector
 	Disks      = collector.Disks{}
+
+	// Memory collector
 	Memory    = collector.Memory{}
+
+	// Network collector
 	Network  = collector.Network{}
+
+	// System collector
 	System   = collector.System{}
 )
 

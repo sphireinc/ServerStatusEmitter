@@ -44,7 +44,7 @@ func (Cache *Cache) Sender(collectorURL string) bool {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Println(helper.Trace(errors.New("Unable to complete request"), "ERROR"))
+		log.Println(helper.Trace(errors.New("unable to complete request"), "ERROR"))
 		return false
 	}
 	defer resp.Body.Close()
