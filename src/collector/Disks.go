@@ -14,11 +14,11 @@ type Disks struct {
 
 // Collect helps to collect data about the Disks
 // and store it in the Disks struct
-func (DisksPtr *Disks) Collect(disk_partition bool) *Disks {
+func (DisksPtr *Disks) Collect(diskPartition bool) *Disks {
 	DisksPtr.DiskUsage, _ = psutil_disk.DiskUsage("/")
 	DisksPtr.DiskIOCounters, _ = psutil_disk.DiskIOCounters()
 
-	if disk_partition {
+	if diskPartition {
 		DisksPtr.DiskPartition, _ = psutil_disk.DiskPartitions(true)
 	}
 
