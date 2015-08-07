@@ -1,0 +1,71 @@
+main():
+    start():
+        load configuration
+        set machine hostname
+        set machine ip
+        set cache timer
+        set report interval
+        set account id
+    register():
+        register with mothership
+        output registration to sys
+    loop:
+        collector():
+            collect cpu data
+            collect memory data
+            collect disks data
+            collect network data
+            collect system data
+        sender():
+            open socket
+            send data
+            close socket
+
+{
+    "Web": {
+        "Load Balanced": [
+            "Web-01",
+            "Web-02"
+        ],
+        "Database": [
+            "TokuDB-01"
+        ]
+    }, 
+    "Mothership": {
+        "Load Balanced: [
+            "Producer-01",
+            "Producer-02"
+        ],
+        "Queue": [
+            "Queue-01",
+        ],
+        "Backend": [
+            "Consumer-01",
+            "Consumer-02"
+        ]
+        "Database": [
+            "Mongo-01"
+        ]
+    }
+}
+
+
+SSE-LB-WEB-01
+SSE-LB-API-01
+SSE-WEB-01
+SSE-WEB-02
+SSE-QUEUE-01
+SSE-QUEUE-02
+SSE-PRODUCER-01
+SSE-PRODUCER-02
+SSE-CONSUMER-01
+SSE-CONSUMER-02
+SSE-DB-TOKUMX-RS-01
+SSE-DB-TOKUMX-RS-02
+SSE-DB-TOKUMX-RS-03
+
+sha512(username) + "$%^rounds=" + rounds + (sha512(password) ^ rounds)
+
+sha512|$6$rounds=40000$nIVrqqz638rB8wOo$VbMv8y2lStgcsYxEuu7JfHiEd06eeiSoIbg7Hvivj9K1vPayaCbAiAqtpyOoIkNfIXFmMD0jK6Dd4WFnvywkY1
+
+white background, black text, border: D5D5D5, background background: F9F9F9, links: 559E4F (http://i.imgur.com/OmqsWhI.png)
