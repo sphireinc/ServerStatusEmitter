@@ -84,17 +84,3 @@ func GetServerExternalIPAddress() (string, error) {
 	return strings.Replace(strings.Replace(string(cmdLineIP), "\n", "", -1), " ", "", -1), nil
 }
 
-// Trace allows us to know which file and which function is executing at the moment.
-func Trace(message error, status string) string {
-	var debug bool // manually set to true if debug is wanted
-
-	if debug {
-		pc := make([]uintptr, 10) // at least 1 entry needed
-		runtime.Callers(2, pc)
-		f := runtime.FuncForPC(pc[0])
-		file, line := f.FileLine(pc[0])
-		return string(file) + "<" + strconv.Itoa(line) + "> " + f.Name() + "(): " + strings.ToUpper(status) + " " + message.Error()
-	}
-
-	return strings.ToUpper(status) + " " + message.Error()
-}

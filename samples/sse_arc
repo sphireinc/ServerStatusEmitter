@@ -1,3 +1,5 @@
+PROCEDURE:::::
+
 main():
     start():
         load configuration
@@ -20,6 +22,16 @@ main():
             open socket
             send data
             close socket
+
+
+
+
+
+
+
+
+
+NOISE:::::::
 
 {
     "Web": {

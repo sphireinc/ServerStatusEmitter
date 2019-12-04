@@ -1,9 +1,12 @@
 {
+    "mothership": "http://mothership.serverstatusmonitoring.com",
+    "log": "/var/log/sse.log",
     "identification": {
-        "account_id": "dcv532d1bbc1980",
-        "organization_id": "acb6b6e1bbc8880cef8ec2bc1cc48b7a",
-        "organization_name": "Sphire LLC",
-        "machine_nickname": "Sphire-APP"
+        "id": "dcv532d1bbc1980",
+        "key": "acb6b6e1bbc8880cef8ec2bc1cc48b7a",
+        "organization": "Sphire",
+        "group": "web-group",
+        "entity": "server-01"
     },
     "settings": {
         "disk": {
