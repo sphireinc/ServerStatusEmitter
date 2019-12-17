@@ -1,10 +1,7 @@
-package sse
+package main
 
 import (
 	"errors"
-	"fmt"
-	"helper"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -43,7 +40,7 @@ type Server struct {
 // Initialize attempts to gather all the data for correct program
 // initialization. Loads config, etc. Returns bool and error -
 // if ever false, error will be set, otherwise if bool is true, error is nil.
-func (server *Server) Initialize() (*Server, string, string, string, error) {
+func (server *Server) Initialize() (string, string, error) {
 	var architecture string
 	var cpuOpMode string
 	var cpuCount string
@@ -52,11 +49,10 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	var cpuMhz string
 
 	// Attempt to get the server IP address
-	ipAddress, err := helper.GetServerExternalIPAddress()
+	ipAddress, err := GetServerExternalIPAddress()
 	if err != nil {
-		log.Println(helper.Trace(errors.New("initialization failed, IP Address unattainable"), "ERROR"))
-		fmt.Println("Initialization failed, IP Address unattainable.", "ERROR")
-		return server, "", "", "", err
+		LogWarn("Initialize() could not obtain IP address, setting to localhost")
+		ipAddress = "localhost"
 	}
 
 	// Get the hostname
@@ -85,7 +81,7 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 	}
 
 	hardwareOut, errHwd := exec.Command("lscpu").Output()
-	hardware := []string{}
+	var hardware []string
 	if errHwd == nil {
 		hardware = strings.Split(string(hardwareOut), "\n")
 	}
@@ -114,41 +110,23 @@ func (server *Server) Initialize() (*Server, string, string, string, error) {
 		}
 	}
 
-	server = &Server{
-		IPAddress: ipAddress,
-		Hostname:  hostname,
-		OperatingSystem: struct {
-			Distributor      string `json:"distributor_id"`
-			VersionSignature string `json:"version_signature"`
-			Version          string `json:"version"`
-		}{
-			Distributor:      strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(distributor), "")),
-			VersionSignature: strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(versionSignature), "")),
-			Version:          strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(version), "")),
-		},
-		Hardware: struct {
-			Architecture string `json:"architecture"`
-			CPUOpMode    string `json:"cpu_op_mode"`
-			CPUCount     string `json:"cpu_count"`
-			CPUFamily    string `json:"cpu_family"`
-			CPUModel     string `json:"cpu_model"`
-			CPUMhz       string `json:"cpu_mhz"`
-		}{
-			Architecture: architecture,
-			CPUOpMode:    cpuOpMode,
-			CPUCount:     cpuCount,
-			CPUFamily:    cpuFamily,
-			CPUModel:     cpuModel,
-			CPUMhz:       cpuMhz,
-		},
-	}
+	server.IPAddress = ipAddress
+	server.Hostname = hostname
+	server.OperatingSystem.Distributor = strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(distributor), ""))
+	server.OperatingSystem.VersionSignature = strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(versionSignature), ""))
+	server.OperatingSystem.Version = strings.TrimSpace(cleanStrRgx.ReplaceAllString(string(version), ""))
+	server.Hardware.Architecture = architecture
+	server.Hardware.CPUOpMode = cpuOpMode
+	server.Hardware.CPUCount = cpuCount
+	server.Hardware.CPUFamily = cpuFamily
+	server.Hardware.CPUModel = cpuModel
+	server.Hardware.CPUMhz = cpuMhz
 
 	if err != nil {
-		log.Println(helper.Trace(errors.New("initialization failed - could not load configuration"), "ERROR"))
-		fmt.Println("Initialization failed - could not load configuration", "ERROR")
-		return server, ipAddress, string(hostname), string(version), err
+		LogFatalError(errors.New("initialization failed"))
+		return ipAddress, string(hostname), err
 	}
 
-	log.Println(helper.Trace(errors.New("initialization complete"), "OK"))
-	return server, ipAddress, string(hostname), string(version), nil
+	LogInfo("Initialize() complete")
+	return ipAddress, string(hostname), nil
 }

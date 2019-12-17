@@ -1,37 +1,34 @@
-package sse
+package main
 
 import (
-	"collector"
 	"time"
 )
 
-var (
-	// CPU collector
-	CPU = collector.CPU{}
+// CPU collector
+var CPU CPU = CPU{}
 
-	// Disks collector
-	Disks = collector.Disks{}
+// Disks collector
+var Disks = Disks{}
 
-	// Memory collector
-	Memory = collector.Memory{}
+// Memory collector
+var Memory = Memory{}
 
-	// Network collector
-	Network = collector.Network{}
+// Network collector
+var Network = Network{}
 
-	// System collector
-	System = collector.System{}
-)
+// System collector
+var System = System{}
 
 // Snapshot struct is a collection of other structs
 // which are relayed from the different segments of
 // the collector package.
 type Snapshot struct {
-	CPU     *collector.CPU     `json:"cpu"`
-	Disks   *collector.Disks   `json:"disks"`
-	Memory  *collector.Memory  `json:"memory"`
-	Network *collector.Network `json:"network"`
-	System  *collector.System  `json:"system"`
-	Time    time.Time          `json:"system_time"`
+	CPU     *CPU
+	Disks   *Disks
+	Memory  *Memory
+	Network *Network
+	System  *System
+	Time    time.Time
 }
 
 // Collector collects a snapshot of the system at

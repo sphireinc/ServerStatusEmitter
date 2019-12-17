@@ -8,28 +8,50 @@ import (
 	"strings"
 )
 
-// HandleError logs and prints the error to console
-func LogErrorAndContinue(err error) {
+// LogInfo logs and prints a message as INFO
+func LogInfo(msg string) {
+	log.Println(format("INFO", msg))
+}
+
+// LogWarn logs and prints a message as WARN
+func LogWarn(msg string) {
+	log.Println(format("WARN", msg))
+}
+
+// LogError logs and prints the error to console
+func LogError(err error) {
 	if err != nil {
-		log.Println(Format(err, "ERROR"))
-		fmt.Println(err, "ERROR")
+		log.Println(format("ERROR", err.Error()))
 	}
 }
 
-// HandleErrorFatal logs and prints the error then exits the application
-func HandleErrorFatal(err error) {
-	LogErrorAndContinue(err)
-	os.Exit(1)
+// LogFatalError logs and prints the error then exits the application
+func LogFatalError(err error) {
+	if err != nil {
+		log.Println(format("FATAL", err.Error()))
+		os.Exit(1)
+	}
 }
 
-// Format allows us to know which file and which function is executing at the moment.
-func Format(err error, status string) string {
+// format allows us to know which file and which function is executing at the moment.
+func format(status string, msg string) string {
 	status = strings.ToUpper(status)
-	return fmt.Sprintf("%s %s", status, err.Error())
+
+	switch status {
+	case "INFO":
+		return fmt.Sprintf("%s %s", status, msg)
+	case "WARN":
+		return fmt.Sprintf("%s %s", status, msg)
+	case "ERROR":
+		return fmt.Sprintf("%s %s", status, msg)
+	case "FATAL":
+		return fmt.Sprintf("%s %s", status, msg)
+	}
+	return ""
 }
 
-// Trace allows us to know which file and which function is executing at the moment.
-func Trace(err error) string {
+// trace allows us to know which file and which function is executing at the moment.
+func trace(err error) string {
 	p := make([]uintptr, 10) // at least 1 entry needed
 	runtime.Callers(2, p)
 	f := runtime.FuncForPC(p[0])
@@ -41,7 +63,8 @@ func Trace(err error) string {
 	return fmt.Sprintf("%s <%d> %s(): %s", file, line, funcName, err.Error())
 }
 
+// lastString returns the last element of a string broken by separators
 func lastString(msg string, separator string) string {
 	splitString := strings.Split(msg, separator)
-	return splitString[len(splitString) - 1]
+	return splitString[len(splitString)-1]
 }

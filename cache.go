@@ -1,11 +1,10 @@
-package sse
+package main
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"helper"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,13 +19,13 @@ var (
 // Also includes the program Version and AccountId - the
 // latter of which is gleaned from the configuration.
 type Cache struct {
-	Node             []*Snapshot `json:"node"`
-	Server           *Server     `json:"server"`
-	AccountID        string      `json:"account_id"`
-	Version          string      `json:"version"`
-	OrganizationID   string      `json:"organization_id"`
-	OrganizationName string      `json:"organization_name"`
-	MachineNickname  string      `json:"machine_nickname"`
+	Node             []*Snapshot
+	Server           *Server
+	AccountID        string
+	Version          string
+	OrganizationID   string
+	OrganizationName string
+	MachineNickname  string
 }
 
 // Sender sends the data in Cache to the mothership,

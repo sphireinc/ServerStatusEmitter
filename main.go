@@ -1,124 +1,79 @@
 package main
 
-var (
-
-	// URIRegister is the uri to be used to register the system this program will run on
-	//URI = {
-	//	Register = "/register"
-	//
-	//	// URICollector is the uri where collected data will be sent to
-	//	URICollector = "/collector"
-	//
-	//	// URIStatus is the uri to check the upstatus of URL
-	//	URIStatus = "/status"
-	//}
-
-
-
-	// Hostname is the hostname of the system this program will run on
-	//Hostname = ""
-
-	// IPAddress is the IP address of the system this program will run on
-	//IPAddress = ""
-
-	// LogFile is the file where we want to log event data and errors
-	//LogFile = "/var/log/sphire-sse.log"
-
-	// ConfigurationFile is the configuration file we want to use
-	//ConfigurationFile = "/etc/sse/config.json"
-
-	// Configuration is the configuration instance (loads the above LogFile)
-	//Configuration = new(Config)
-
-	// CollectFrequencySeconds is value which tells us
-	// to collect a snapshot and store in cache
-	// every X seconds where X is a non negative integer
-	//CollectFrequencySeconds = 1
-
-	// ReportFrequencySeconds tells us the frequency
-	// in seconds to report all snapshots in cache
-	//ReportFrequencySeconds = 1
-
-	//// CPU is an instance of collector.CPU
-	//CPU = collector.CPU{}
-	//
-	//// Disks is an instance of collector.Disks
-	//Disks = collector.Disks{}
-	//
-	//// Memory is an instance of collector.Memory
-	//Memory = collector.Memory{}
-	//
-	//// Network is an instance of collector.Network
-	//Network = collector.Network{}
-	//
-	//// System is an instance of collector.System
-	//System = collector.System{}
-
-	// Version denotes the version of this program
-	//Version = "1.0.1"
+import (
+	"errors"
+	//"fmt"
+	"log"
+	"os"
+	//"os/signal"
+	//"time"
 )
 
+// Configuration is the configuration instance (loads the above LogFile)
+var Conf = new(Config)
+
+func logger() {
+	logger, err := os.OpenFile(Conf.Log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	LogFatalError(err)
+	defer func() {
+		_ = logger.Close()
+	}()
+	log.SetOutput(logger)
+}
+
 func main() {
+	// Load and parse configuration file
+	Conf.Load()
+
 	// Define the global logger
-	//logger, err := os.OpenFile(LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	//HandleError(err)
-	//defer logger.Close()
-	//log.SetOutput(logger)
-	//
-	//// Load and parse configuration file
-	//file, err := os.Open(ConfigurationFile)
-	//HandleError(err)
-	//err = json.NewDecoder(file).Decode(Configuration)
-	//HandleError(err)
-	//
-	//// Set any parameters that need to be set
-	//CollectFrequencySeconds = Configuration.Settings.Reporting.CollectFrequencySeconds
-	//ReportFrequencySeconds = Configuration.Settings.Reporting.ReportFrequencySeconds
-	//
-	//var status = helper.Status{}
-	//var statusResult = status.CheckStatus(URL + URIStatus)
-	//if statusResult == false {
-	//	HandleError(errors.New("mothership unreachable - check your internet connection"))
-	//}
-	//
-	//// Perform system initialization
-	//var serverObj = sse.Server{}
-	//server, ipAddress, hostname, version, error := serverObj.Initialize()
-	//HandleError(error)
-	//
-	//IPAddress = ipAddress
-	//Hostname = hostname
-	//Version = version
-	//
+	logger()
+
+	var err error
+	var server Server
+
+	err = checkStatus(Conf.GetStatusURL())
+	if err != nil {
+		LogFatalError(errors.New("mothership unreachable - check your configuration"))
+	}
+
+	// Perform system initialization
+	Conf.Settings.System.IPAddress, Conf.Settings.System.Hostname, err = server.Initialize()
+	LogError(err)
+
 	//// Perform registration
-	//body, err := sse.Register(map[string]interface{}{
-	//	"configuration":     Configuration,
-	//	"mothership_url":    URL,
-	//	"register_uri":      URIRegister,
+	//body, err := Register(map[string]interface{}{
+	//	"mothership_url":    Conf.Mothership,
+	//	"register_url":      Conf.GetRegisterURL(),
 	//	"version":           Version,
-	//	"collect_frequency": CollectFrequencySeconds,
-	//	"report_frequency":  ReportFrequencySeconds,
-	//	"hostname":          Hostname,
-	//	"ip_address":        IPAddress,
-	//	"log_file":          LogFile,
-	//	"config_file":       ConfigurationFile,
-	//}, URL+URIRegister+"/"+Version)
-	//if err != nil {
-	//	HandleError(errors.New("Unable to register this machine" + string(body)))
-	//}
+	//	"collect_frequency": Conf.Settings.Reporting.CollectFrequencySeconds,
+	//	"report_frequency":  Conf.Settings.Reporting.ReportFrequencySeconds,
+	//	"hostname":          Conf.Settings.System.Hostname,
+	//	"ip_address":        Conf.Settings.System.IPAddress
+	//}, Conf.GetRegisterURL())
+	//
+	//LogError(err)
 	//
 	//// Set up our collector
 	//var counter int
 	//var snapshot = sse.Snapshot{}
-	//var cache = sse.Cache{
-	//	AccountID:        Configuration.Identification.AccountID,
-	//	OrganizationID:   Configuration.Identification.OrganizationID,
-	//	OrganizationName: Configuration.Identification.OrganizationName,
-	//	MachineNickname:  Configuration.Identification.MachineNickname,
+	//var cache = sse.Cache {
+	//	AccountID:        Conf.Identification.ID,
+	//	OrganizationID:   Conf.Identification.Key,
+	//	OrganizationName: Conf.Identification.Organization,
+	//	MachineNickname:  Conf.Identification.MachineNickname,
 	//	Version:          Version,
-	//	Server:           server}
+	//	Server:           server
+	//}
 	//
-	//ticker := time.NewTicker(time.Duration(CollectFrequencySeconds) * time.Second)
+	//type identification struct {
+	//	ID           string
+	//	Key          string
+	//	Organization string
+	//	Group        string
+	//	Entity       string
+	//}
+	//
+	//ticker := time.NewTicker(time.Duration(Conf.Reporting.CollectFrequencySeconds) * time.Second)
 	//death := make(chan os.Signal, 1)
 	//signal.Notify(death, os.Interrupt, os.Kill)
 	//
@@ -130,12 +85,11 @@ func main() {
 	//			snapshot = sse.Snapshot{}
 	//
 	//			// fill in the Snapshot struct and add to the cache
-	//			cache.Node = append(cache.Node, snapshot.Collector(Configuration.Settings.Disk.IncludePartitionData,
-	//				Configuration.Settings.System.IncludeUsers))
+	//			cache.Node = append(cache.Node, snapshot.Collector(Conf.Settings.Disk.IncludePartitionData, Conf.Settings.System.IncludeUsers))
 	//			counter++
 	//
-	//			if counter > 0 && counter%ReportFrequencySeconds == 0 {
-	//				cache.Sender(URL + URICollector)
+	//			if counter > 0 && (counter%Conf.Reporting.ReportFrequencySeconds) == 0 {
+	//				cache.Sender(Conf.GetCollectorURL())
 	//				cache.Node = nil // Clear the Node Cache
 	//				counter = 0
 	//			}

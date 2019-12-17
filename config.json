@@ -1,4 +1,5 @@
 {
+    "mode": "reporter",
     "mothership": "http://mothership.serverstatusmonitoring.com",
     "log": "/var/log/sse.log",
     "identification": {
@@ -17,7 +18,7 @@
         },
         "reporting": {
             "collect_frequency_seconds": 1,
-            "report_frequency_seconds": 1
+            "report_frequency_seconds": 60
         }
     }
 }
