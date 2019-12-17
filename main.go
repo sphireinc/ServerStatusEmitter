@@ -2,6 +2,10 @@ package main
 
 import (
 	"errors"
+	"github.com/jsanc623/ServerStatusEmitter/config"
+	error2 "github.com/jsanc623/ServerStatusEmitter/error"
+	"github.com/jsanc623/ServerStatusEmitter/helper"
+	"github.com/jsanc623/ServerStatusEmitter/runner"
 	"log"
 	"os"
 	"os/signal"
@@ -9,59 +13,64 @@ import (
 )
 
 // Configuration is the configuration instance (loads the above LogFile)
-var Conf = new(Config)
+var Conf config.Config
 
 func logger() {
-	logger, err := os.OpenFile(Conf.Log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	LogFatalError(err)
+	logger, err := os.OpenFile(Conf.Log, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	error2.LogFatalError(err)
 	defer func() {
 		_ = logger.Close()
 	}()
 	log.SetOutput(logger)
 }
 
-func main() {
+func init() {
 	// Load and parse configuration file
 	Conf.Load()
 
 	// Define the global logger
 	logger()
 
-	var err error
-	var server Server
+	helper.Conf = Conf
+	runner.Conf = Conf
+}
 
-	err = checkStatus(Conf.GetStatusURL())
+func main() {
+	var err error
+	var server runner.Server
+
+	err = helper.CheckStatus(Conf.GetStatusURL())
 	if err != nil {
-		LogFatalError(errors.New("mothership unreachable - check your configuration"))
+		error2.LogFatalError(errors.New("mothership unreachable - check your configuration"))
 	}
 
 	// Perform system initialization
 	Conf.Settings.System.IPAddress, Conf.Settings.System.Hostname, err = server.Initialize()
-	LogError(err)
+	error2.LogError(err)
 
 	// Perform registration
-	_, err = Register(map[string]interface{}{
+	_, err = runner.Register(map[string]interface{}{
 		"mothership_url":    Conf.Mothership,
 		"register_url":      Conf.GetRegisterURL(),
-		"version":           Version,
+		"version":           config.Version,
 		"collect_frequency": Conf.Settings.Reporting.CollectFrequencySeconds,
 		"report_frequency":  Conf.Settings.Reporting.ReportFrequencySeconds,
 		"hostname":          Conf.Settings.System.Hostname,
 		"ip_address":        Conf.Settings.System.IPAddress,
 	}, Conf.GetRegisterURL())
 
-	LogError(err)
+	error2.LogError(err)
 
 	// Set up our collector
 	var counter int
-	var snapshot Snapshot
-	var cache = Cache{
+	var snapshot runner.Snapshot
+	var cache = runner.Cache{
 		ID:           Conf.Identification.ID,
 		Key:          Conf.Identification.Key,
 		Organization: Conf.Identification.Organization,
 		Group:        Conf.Identification.Group,
 		Entity:       Conf.Identification.Entity,
-		Version:      Version,
+		Version:      config.Version,
 		Server:       &server,
 	}
 
@@ -74,7 +83,7 @@ func main() {
 			select {
 			case <-ticker.C: // send the updated time back via to the channel
 				// reset the snapshot to an empty struct
-				snapshot = Snapshot{}
+				snapshot = runner.Snapshot{}
 				snapshot.Collector()
 
 				// fill in the Snapshot struct and add to the cache
@@ -87,7 +96,7 @@ func main() {
 					counter = 0
 				}
 			case <-death:
-				LogInfo("chan died")
+				error2.LogInfo("chan died")
 				return
 			}
 		}

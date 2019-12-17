@@ -1,7 +1,7 @@
 {
     "mode": "reporter",
     "mothership": "http://mothership.serverstatusmonitoring.com",
-    "log": "/var/log/sse.log",
+    "log": "/Users/jsanchez/GolandProjects/ServerStatusEmitter/sse.log",
     "identification": {
         "id": "dcv532d1bbc1980",
         "key": "acb6b6e1bbc8880cef8ec2bc1cc48b7a",

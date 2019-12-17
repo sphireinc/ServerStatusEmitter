@@ -1,9 +1,13 @@
-package main
+package runner
 
 import (
 	"github.com/jsanc623/ServerStatusEmitter/collector"
+	"github.com/jsanc623/ServerStatusEmitter/config"
+	error2 "github.com/jsanc623/ServerStatusEmitter/error"
 	"time"
 )
+
+var Conf config.Config
 
 // Snapshot struct is a collection of other structs
 // which are relayed from the different segments of
@@ -29,19 +33,19 @@ func (Snapshot *Snapshot) Collector() {
 
 	// Perform collection runs
 	err := CPU.Collect()
-	LogError(err)
+	error2.LogError(err)
 
 	err = Disks.Collect(Conf.Settings.Disk.IncludePartitionData)
-	LogError(err)
+	error2.LogError(err)
 
 	err = Memory.Collect()
-	LogError(err)
+	error2.LogError(err)
 
 	err = Network.Collect()
-	LogError(err)
+	error2.LogError(err)
 
 	err = System.Collect(Conf.Settings.System.IncludeUsers)
-	LogError(err)
+	error2.LogError(err)
 
 	Snapshot.Time = time.Now().UTC()
 	Snapshot.CPU = &CPU

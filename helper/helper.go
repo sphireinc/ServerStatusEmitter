@@ -1,26 +1,30 @@
-package main
+package helper
 
 import (
 	"encoding/json"
 	"errors"
 	"github.com/glendc/go-external-ip"
+	"github.com/jsanc623/ServerStatusEmitter/config"
+	error2 "github.com/jsanc623/ServerStatusEmitter/error"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 )
 
+var Conf config.Config
+
 type Status struct {
 	Status string
 }
 
-// checkStatus checks the status of the mothership
-func checkStatus(uri string) error {
+// CheckStatus checks the status of the mothership
+func CheckStatus(uri string) error {
 	var err error
 	var S Status
 
 	resp, err := http.Get(uri)
 	if err != nil {
-		LogError(err)
+		error2.LogError(err)
 		return err
 	}
 
@@ -35,7 +39,7 @@ func checkStatus(uri string) error {
 	}
 
 	err = errors.New("unable to complete status request")
-	LogError(err)
+	error2.LogError(err)
 	return err
 }
 

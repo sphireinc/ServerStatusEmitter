@@ -27,3 +27,4 @@ _testmain.go
 sse
 pkg/
 bin/
+*.log

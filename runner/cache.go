@@ -1,9 +1,10 @@
-package main
+package runner
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	error2 "github.com/jsanc623/ServerStatusEmitter/error"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -34,12 +35,12 @@ type Cache struct {
 func (Cache *Cache) Sender(collectorURL string) bool {
 	jsonStr, err := json.Marshal(Cache)
 	if err != nil {
-		LogError(errors.New("malformed JSON in cache.Sender()"))
+		error2.LogError(errors.New("malformed JSON in cache.Sender()"))
 	}
 
 	req, err := http.NewRequest("POST", collectorURL, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		LogError(err)
+		error2.LogError(err)
 		return false
 	}
 
@@ -50,7 +51,7 @@ func (Cache *Cache) Sender(collectorURL string) bool {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		LogError(err)
+		error2.LogError(err)
 		return false
 	}
 
@@ -60,7 +61,7 @@ func (Cache *Cache) Sender(collectorURL string) bool {
 
 	readBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		LogError(errors.New("unable to complete request " + string(readBody)))
+		error2.LogError(errors.New("unable to complete request " + string(readBody)))
 		return false
 	}
 

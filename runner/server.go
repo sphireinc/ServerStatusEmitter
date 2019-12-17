@@ -1,7 +1,9 @@
-package main
+package runner
 
 import (
 	"errors"
+	error2 "github.com/jsanc623/ServerStatusEmitter/error"
+	"github.com/jsanc623/ServerStatusEmitter/helper"
 	"os"
 	"os/exec"
 	"regexp"
@@ -49,9 +51,9 @@ func (server *Server) Initialize() (string, string, error) {
 	var cpuMhz string
 
 	// Attempt to get the server IP address
-	ipAddress, err := GetServerExternalIPAddress()
+	ipAddress, err := helper.GetServerExternalIPAddress()
 	if err != nil {
-		LogWarn("Initialize() could not obtain IP address, setting to localhost")
+		error2.LogWarn("Initialize() could not obtain IP address, setting to localhost")
 		ipAddress = "localhost"
 	}
 
@@ -123,10 +125,10 @@ func (server *Server) Initialize() (string, string, error) {
 	server.Hardware.CPUMhz = cpuMhz
 
 	if err != nil {
-		LogFatalError(errors.New("initialization failed"))
+		error2.LogFatalError(errors.New("initialization failed"))
 		return ipAddress, string(hostname), err
 	}
 
-	LogInfo("Initialize() complete")
+	error2.LogInfo("Initialize() complete")
 	return ipAddress, string(hostname), nil
 }

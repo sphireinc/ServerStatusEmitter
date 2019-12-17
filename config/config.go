@@ -1,7 +1,8 @@
-package main
+package config
 
 import (
 	"encoding/json"
+	sserror "github.com/jsanc623/ServerStatusEmitter/error"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -62,18 +63,18 @@ type reporting struct {
 // Load ingests a JSON config file into our Config struct
 func (C *Config) Load() {
 	jsonFk, err := os.Open(configFile)
-	LogFatalError(err)
+	sserror.LogFatalError(err)
 
 	defer func() {
 		err = jsonFk.Close()
-		LogError(err)
+		sserror.LogError(err)
 	}()
 
 	byteValue, err := ioutil.ReadAll(jsonFk)
-	LogFatalError(err)
+	sserror.LogFatalError(err)
 
 	err = json.Unmarshal(byteValue, &C)
-	LogFatalError(err)
+	sserror.LogFatalError(err)
 }
 
 // GetURL returns the mothership URL with or without an appended URI
@@ -81,7 +82,7 @@ func (C *Config) GetURL(uri string) string {
 	if uri != "" {
 		u, err := url.Parse(C.Mothership)
 		if err != nil {
-			LogError(err)
+			sserror.LogError(err)
 		}
 		u.Path = path.Join(u.Path, uriBase)
 		u.Path = path.Join(u.Path, Version)
