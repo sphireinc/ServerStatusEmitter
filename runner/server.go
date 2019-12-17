@@ -2,8 +2,8 @@ package runner
 
 import (
 	"errors"
-	error2 "github.com/jsanc623/ServerStatusEmitter/error"
 	"github.com/jsanc623/ServerStatusEmitter/helper"
+	error2 "github.com/jsanc623/ServerStatusEmitter/sphlog"
 	"os"
 	"os/exec"
 	"regexp"
@@ -40,8 +40,8 @@ type Server struct {
 }
 
 // Initialize attempts to gather all the data for correct program
-// initialization. Loads config, etc. Returns bool and error -
-// if ever false, error will be set, otherwise if bool is true, error is nil.
+// initialization. Loads config, etc. Returns bool and sphlog -
+// if ever false, sphlog will be set, otherwise if bool is true, sphlog is nil.
 func (server *Server) Initialize() (string, string, error) {
 	var architecture string
 	var cpuOpMode string

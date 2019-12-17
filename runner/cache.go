@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	error2 "github.com/jsanc623/ServerStatusEmitter/error"
+	error2 "github.com/jsanc623/ServerStatusEmitter/sphlog"
 	"io/ioutil"
 	"net/http"
 	"time"

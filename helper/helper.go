@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/glendc/go-external-ip"
 	"github.com/jsanc623/ServerStatusEmitter/config"
-	error2 "github.com/jsanc623/ServerStatusEmitter/error"
+	error2 "github.com/jsanc623/ServerStatusEmitter/sphlog"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -45,13 +45,13 @@ func CheckStatus(uri string) error {
 
 // GetServerExternalIPAddress gets the server external IP address (public IP address) and returns it.
 // If Conf.Settings.System.IPAddress is set, it'll return that instead.
-// It returns an empty string and an error if it encounters an error.
+// It returns an empty string and an sphlog if it encounters an sphlog.
 func GetServerExternalIPAddress() (string, error) {
 	if Conf.Settings.System.IPAddress != "" {
 		return Conf.Settings.System.IPAddress, nil
 	}
 
-	// Create the default consensus, using the default configuration and no logger.
+	// Create the default consensus, using the default configuration and no sphlog.
 	consensus := externalip.DefaultConsensus(nil, nil)
 
 	// Get your IP, which is never <nil> when err is <nil>.

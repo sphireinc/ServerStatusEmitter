@@ -3,7 +3,7 @@ package runner
 import (
 	"github.com/jsanc623/ServerStatusEmitter/collector"
 	"github.com/jsanc623/ServerStatusEmitter/config"
-	error2 "github.com/jsanc623/ServerStatusEmitter/error"
+	error2 "github.com/jsanc623/ServerStatusEmitter/sphlog"
 	"time"
 )
 

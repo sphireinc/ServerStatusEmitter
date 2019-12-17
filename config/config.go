@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	sserror "github.com/jsanc623/ServerStatusEmitter/error"
+	sserror "github.com/jsanc623/ServerStatusEmitter/sphlog"
 	"io/ioutil"
 	"net/url"
 	"os"

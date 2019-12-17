@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"github.com/jsanc623/ServerStatusEmitter/config"
-	error2 "github.com/jsanc623/ServerStatusEmitter/error"
 	"github.com/jsanc623/ServerStatusEmitter/helper"
 	"github.com/jsanc623/ServerStatusEmitter/runner"
+	"github.com/jsanc623/ServerStatusEmitter/sphlog"
 	"log"
 	"os"
 	"os/signal"
@@ -17,7 +17,7 @@ var Conf config.Config
 
 func logger() {
 	logger, err := os.OpenFile(Conf.Log, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
-	error2.LogFatalError(err)
+	sphlog.LogFatalError(err)
 	defer func() {
 		_ = logger.Close()
 	}()
@@ -28,8 +28,10 @@ func init() {
 	// Load and parse configuration file
 	Conf.Load()
 
-	// Define the global logger
+	// Define the global sphlog
 	logger()
+
+	sphlog.LogInfo("")
 
 	helper.Conf = Conf
 	runner.Conf = Conf
@@ -41,12 +43,12 @@ func main() {
 
 	err = helper.CheckStatus(Conf.GetStatusURL())
 	if err != nil {
-		error2.LogFatalError(errors.New("mothership unreachable - check your configuration"))
+		sphlog.LogFatalError(errors.New("mothership unreachable - check your configuration"))
 	}
 
 	// Perform system initialization
 	Conf.Settings.System.IPAddress, Conf.Settings.System.Hostname, err = server.Initialize()
-	error2.LogError(err)
+	sphlog.LogError(err)
 
 	// Perform registration
 	_, err = runner.Register(map[string]interface{}{
@@ -59,7 +61,7 @@ func main() {
 		"ip_address":        Conf.Settings.System.IPAddress,
 	}, Conf.GetRegisterURL())
 
-	error2.LogError(err)
+	sphlog.LogError(err)
 
 	// Set up our collector
 	var counter int
@@ -96,7 +98,7 @@ func main() {
 					counter = 0
 				}
 			case <-death:
-				error2.LogInfo("chan died")
+				sphlog.LogInfo("chan died")
 				return
 			}
 		}
