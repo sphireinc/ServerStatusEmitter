@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -88,7 +87,7 @@ func main() {
 					counter = 0
 				}
 			case <-death:
-				fmt.Println("died")
+				LogInfo("chan died")
 				return
 			}
 		}

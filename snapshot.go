@@ -43,7 +43,7 @@ func (Snapshot *Snapshot) Collector() {
 	err = System.Collect(Conf.Settings.System.IncludeUsers)
 	LogError(err)
 
-	Snapshot.Time = time.Now().Local()
+	Snapshot.Time = time.Now().UTC()
 	Snapshot.CPU = &CPU
 	Snapshot.Disks = &Disks
 	Snapshot.Memory = &Memory

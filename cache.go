@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 var (
@@ -32,24 +32,33 @@ type Cache struct {
 // then clears the Cache struct so that it can accept
 // new data.
 func (Cache *Cache) Sender(collectorURL string) bool {
-	var jsonStr = []byte(`{}`)
-	jsonStr, _ = json.Marshal(Cache)
-
-	fmt.Println(string(jsonStr))
+	jsonStr, err := json.Marshal(Cache)
+	if err != nil {
+		LogError(errors.New("malformed JSON in cache.Sender()"))
+	}
 
 	req, err := http.NewRequest("POST", collectorURL, bytes.NewBuffer(jsonStr))
-	req.Header.Set("X-Custom-Header", "SND")
+	if err != nil {
+		LogError(err)
+		return false
+	}
+
+	req.Header.Set("X-Sse-Time", time.Now().UTC().String())
+	req.Header.Set("X-Sse-Mode", Conf.Mode)
+	req.Header.Set("X-Sse-Entity", Conf.Identification.Entity)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		LogError(errors.New("unable to complete request"))
+		LogError(err)
 		return false
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	readBody, err := ioutil.ReadAll(resp.Body)
-
 	if err != nil {
 		LogError(errors.New("unable to complete request " + string(readBody)))
 		return false

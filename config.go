@@ -2,17 +2,19 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
+	"path"
 )
 
 const (
+	uriBase      = "api"
 	configFile   = "config.json"
 	RegisterURI  = "register"
 	CollectorURI = "collector"
 	StatusURI    = "status"
-	Version      = "1.0.1"
+	Version      = "1.0"
 )
 
 // Config holds our application configuration
@@ -77,7 +79,14 @@ func (C *Config) Load() {
 // GetURL returns the mothership URL with or without an appended URI
 func (C *Config) GetURL(uri string) string {
 	if uri != "" {
-		return fmt.Sprintf("%s/%s", C.Mothership, uri)
+		u, err := url.Parse(C.Mothership)
+		if err != nil {
+			LogError(err)
+		}
+		u.Path = path.Join(u.Path, uriBase)
+		u.Path = path.Join(u.Path, Version)
+		u.Path = path.Join(u.Path, uri)
+		return u.String()
 	}
 	return C.Mothership
 }
