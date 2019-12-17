@@ -4,21 +4,24 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"helper"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
 // Register performs a registration of this instance with the mothership
 func Register(registrationObject map[string]interface{}, registrationURL string) (string, error) {
-	log.Println(helper.Trace(errors.New("starting registration"), "OK"))
+	LogError(errors.New("starting registration"))
 	var jsonStr = []byte(`{}`)
 
 	jsonStr, _ = json.Marshal(registrationObject)
-	fmt.Println(string(registrationURL))
+
+	LogInfo("registration url: " + registrationURL)
+
 	req, err := http.NewRequest("POST", registrationURL, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		LogError(err)
+		LogFatalError(errors.New("could not register this utility with the mothership"))
+	}
 	req.Header.Set("X-Custom-Header", "REG")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -27,18 +30,19 @@ func Register(registrationObject map[string]interface{}, registrationURL string)
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	var status helper.Status
+	var status Status
 	_ = json.Unmarshal(body, &status)
 
 	if status.Status == "upgrade" {
-		log.Println(helper.Trace(errors.New("there is a new version available. Please consider upgrading"), "OK"))
-		fmt.Println("There is a new version available. Please consider upgrading")
+		LogError(errors.New("there is a new version available. Please consider upgrading"))
 	}
 
-	log.Println(helper.Trace(errors.New("registration complete"), "OK"))
+	LogInfo("registration complete")
 	return string(body), nil
 }

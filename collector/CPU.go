@@ -1,4 +1,4 @@
-package main
+package collector
 
 import (
 	"github.com/shirou/gopsutil/cpu"
@@ -6,19 +6,35 @@ import (
 
 // CPU is the struct that contains data about the CPU
 type CPU struct {
-	Times        interface{}
-	Info         interface{}
+	Times        []cpu.TimesStat
+	Info         []cpu.InfoStat
 	Count        int
 	CountLogical int
 }
 
-// Collect helps to collect data about the CPU
-// and store it in the CPU struct
-func (CPUPtr *CPU) Collect() *CPU {
-	CPUPtr.CountLogical, _ = cpu.CPUCounts(true)
-	CPUPtr.Count, _ = cpu.CPUCounts(false)
-	CPUPtr.Times, _ = cpu.CPUTimes(true)
-	CPUPtr.Info, _ = cpu.CPUInfo()
+// Collect helps to collect data about the CPU and store it in the CPU struct
+func (CPU *CPU) Collect() error {
+	var err error
 
-	return CPUPtr
+	CPU.CountLogical, err = cpu.Counts(true)
+	if err != nil {
+		return err
+	}
+
+	CPU.Count, err = cpu.Counts(false)
+	if err != nil {
+		return err
+	}
+
+	CPU.Times, err = cpu.Times(true)
+	if err != nil {
+		return err
+	}
+
+	CPU.Info, err = cpu.Info()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

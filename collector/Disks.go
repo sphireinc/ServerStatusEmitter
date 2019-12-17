@@ -1,4 +1,4 @@
-package main
+package collector
 
 import (
 	"github.com/shirou/gopsutil/disk"
@@ -11,15 +11,26 @@ type Disks struct {
 	DiskIOCounters interface{}
 }
 
-// Collect helps to collect data about the Disks
-// and store it in the Disks struct
-func (DisksPtr *Disks) Collect(diskPartition bool) *Disks {
-	DisksPtr.DiskUsage, _ = disk.DiskUsage("/")
-	DisksPtr.DiskIOCounters, _ = disk.DiskIOCounters()
+// Collect helps to collect data about the Disks and store it in the Disks struct
+func (Disks *Disks) Collect(diskPartition bool) error {
+	var err error
 
-	if diskPartition {
-		DisksPtr.DiskPartition, _ = disk.DiskPartitions(true)
+	Disks.DiskUsage, err = disk.Usage("/")
+	if err != nil {
+		return err
 	}
 
-	return DisksPtr
+	Disks.DiskIOCounters, err = disk.IOCounters()
+	if err != nil {
+		return err
+	}
+
+	if diskPartition {
+		Disks.DiskPartition, err = disk.Partitions(true)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

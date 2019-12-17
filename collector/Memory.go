@@ -1,4 +1,4 @@
-package main
+package collector
 
 import (
 	"github.com/shirou/gopsutil/mem"
@@ -12,9 +12,18 @@ type Memory struct {
 
 // Collect helps to collect data about the Memory
 // and store it in the Memory struct
-func (MemoryPtr *Memory) Collect() *Memory {
-	MemoryPtr.VirtualMemoryStat, _ = mem.VirtualMemory()
-	MemoryPtr.SwapMemoryStat, _ = mem.SwapMemory()
+func (Memory *Memory) Collect() error {
+	var err error
 
-	return MemoryPtr
+	Memory.VirtualMemoryStat, err = mem.VirtualMemory()
+	if err != nil {
+		return err
+	}
+
+	Memory.SwapMemoryStat, err = mem.SwapMemory()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

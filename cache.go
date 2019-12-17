@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -19,13 +18,14 @@ var (
 // Also includes the program Version and AccountId - the
 // latter of which is gleaned from the configuration.
 type Cache struct {
-	Node             []*Snapshot
-	Server           *Server
-	AccountID        string
-	Version          string
-	OrganizationID   string
-	OrganizationName string
-	MachineNickname  string
+	Node         []*Snapshot
+	Server       *Server
+	ID           string
+	Version      string
+	Key          string
+	Organization string
+	Group        string
+	Entity       string
 }
 
 // Sender sends the data in Cache to the mothership,
@@ -43,7 +43,7 @@ func (Cache *Cache) Sender(collectorURL string) bool {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Println(helper.Trace(errors.New("unable to complete request"), "ERROR"))
+		LogError(errors.New("unable to complete request"))
 		return false
 	}
 	defer resp.Body.Close()
@@ -51,8 +51,7 @@ func (Cache *Cache) Sender(collectorURL string) bool {
 	readBody, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Println(helper.Trace(errors.New("unable to complete request "+string(readBody)), "ERROR"))
-		fmt.Println("unable to complete request"+string(readBody), "ERROR")
+		LogError(errors.New("unable to complete request " + string(readBody)))
 		return false
 	}
 

@@ -26,11 +26,11 @@ type Config struct {
 }
 
 type identification struct {
-	ID           string
-	Key          string
-	Organization string
-	Group        string
-	Entity       string
+	ID           string // AccountID
+	Key          string // OrganizationID
+	Organization string // OrganizationName
+	Group        string // Group
+	Entity       string // Entity
 }
 
 type settings struct {
