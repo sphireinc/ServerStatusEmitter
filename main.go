@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// Configuration is the configuration instance (loads the above LogFile)
+// Conf Configuration is the configuration instance (loads the above LogFile)
 var Conf config.Config
 
 func logger() {
