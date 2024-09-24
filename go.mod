@@ -1,6 +1,6 @@
 module github.com/jsanc623/ServerStatusEmitter
 
-go 1.13
+go 1.22.3
 
 require (
 	github.com/glendc/go-external-ip v0.0.0-20170425150139-139229dcdddd
